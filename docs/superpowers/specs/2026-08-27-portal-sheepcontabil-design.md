@@ -63,12 +63,12 @@ SC-01 e SC-11 são catalogados como frequência **Mensal**, mas dependem de um a
 
 ### 5.2 SC-01 — Extrato bancário → OFX
 
-Fluxo: upload (ou item pendente da caixa de entrada) → extração de texto do PDF → Claude interpreta as linhas em `{data, histórico, valor}` com confiança por linha, tolerando qualquer leiaute de banco → gera arquivo OFX válido para download.
+Fluxo: upload (ou item pendente da caixa de entrada) de um PDF **ou de uma foto** (JPEG/PNG) do extrato → o documento vai direto para a API multimodal da Anthropic (sem etapa separada de OCR: o Claude lê PDF e imagem nativamente) → Claude interpreta as linhas em `{data, histórico, valor}` com confiança por linha, tolerando qualquer leiaute de banco e qualquer um dos dois formatos → gera arquivo OFX válido para download.
 
 - `Lancamento` (documentoEntradaId, data, histórico, valor, confiança, status `CONFIRMADO` | `PENDENTE_REVISAO`).
 - Linhas de baixa confiança aparecem numa fila de conferência ao lado do resultado, com o trecho original, para confirmação manual antes de considerar o item pronto para importar.
 - Fronteira mockada: o "sistema contábil" que importaria o OFX não existe de verdade — a entrega do módulo é o arquivo OFX para download.
-- Seed: pelo menos 3 extratos sintéticos em PDF com leiautes de banco diferentes, para demonstrar que a solução generaliza (esse é o argumento central do módulo, citado como risco no catálogo).
+- Seed: pelo menos 3 extratos sintéticos em PDF com leiautes de banco diferentes, mais 1 exemplo em foto (imagem de um extrato, simulando o cliente fotografando o papel), para demonstrar que a solução generaliza tanto entre leiautes quanto entre formatos de entrada — esse é o argumento central do módulo, citado como risco no catálogo.
 
 ### 5.3 SC-11 — Presunção nas notas de serviço médicas
 
@@ -120,7 +120,7 @@ Crons definidos em `vercel.json`, batendo em rotas de API protegidas por um segr
 
 - 1 usuário admin + 1 usuário operador (setor definido).
 - ~8-10 clientes fictícios, CNPJ sintético com dígito verificador válido em formato, nomes inventados, atividades variadas.
-- 3 extratos bancários em PDF com leiautes diferentes (SC-01).
+- 3 extratos bancários em PDF com leiautes diferentes, mais 1 em foto (imagem) (SC-01).
 - 2-3 XMLs de NFS-e, incluindo um caso com muitos itens (SC-11).
 - Lista inicial de termos de presunção (SC-11).
 - 2-3 fluxos de tarefas encadeadas com tarefas em estágios diferentes (SC-18).
@@ -160,7 +160,7 @@ E2E fica registrado como "o que eu faria com mais tempo" para a apresentação.
 
 ## 13. Suposições registradas
 
-- Extratos chegam em PDF nativo (texto extraível), não foto/scan — OCR de imagem fica fora de escopo e é citado como "o que faria com mais tempo".
+- Extratos chegam em PDF (nativo ou escaneado) ou em foto (JPEG/PNG); a leitura dos dois formatos é feita pela API multimodal da Anthropic, sem pipeline de OCR dedicado.
 - NFS-e chega em XML no padrão ABRASF simplificado (descrição do serviço em texto livre, valor do item).
 - "Sistema de tarefas" e "sistema contábil" citados no catálogo são inteiramente mockados dentro do próprio portal — não há integração externa real em nenhum dos 4 módulos.
 - Papel `OPERADOR` do seed é vinculado a um único setor para demonstrar a segregação de visão; múltiplos setores por operador fica fora de escopo.
@@ -168,6 +168,5 @@ E2E fica registrado como "o que eu faria com mais tempo" para a apresentação.
 ## 14. Fora de escopo
 
 - SC-13 (download em lote no portal nacional) e demais processos do catálogo não selecionados.
-- OCR de extratos em imagem/foto.
 - Testes end-to-end automatizados.
 - Múltiplos ambientes (staging/produção) — apenas produção na Vercel.
