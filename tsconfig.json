@@ -30,5 +30,11 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules", "prisma/**/*.ts"]
+  "exclude": [
+    "node_modules",
+    // TODO(Task 5): reavaliar esta exclusao quando src/lib/senha.ts existir.
+    // Existe so para o next build nao travar no import pendente de
+    // prisma/seed.ts (ver Task 3/Task 4 do plano de fundacao).
+    "prisma/**/*.ts"
+  ]
 }
