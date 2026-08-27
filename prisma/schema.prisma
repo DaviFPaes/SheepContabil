@@ -1,0 +1,51 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum PapelUsuario {
+  ADMIN
+  OPERADOR
+}
+
+enum StatusExecucao {
+  PENDENTE
+  SUCESSO
+  ERRO
+  PARCIAL
+}
+
+model Usuario {
+  id        String       @id @default(cuid())
+  email     String       @unique
+  nome      String
+  senhaHash String
+  papel     PapelUsuario
+  setor     String?
+  criadoEm  DateTime     @default(now())
+}
+
+model Cliente {
+  id          String   @id @default(cuid())
+  razaoSocial String
+  cnpj        String   @unique
+  atividade   String
+  criadoEm    DateTime @default(now())
+}
+
+model Execucao {
+  id           String         @id @default(cuid())
+  moduloCodigo String
+  disparadoPor String
+  status       StatusExecucao @default(PENDENTE)
+  iniciadoEm   DateTime       @default(now())
+  finalizadoEm DateTime?
+  resumo       String?
+  erro         String?
+
+  @@index([moduloCodigo, iniciadoEm])
+}
