@@ -21,9 +21,11 @@ Um 5º processo pode ser adicionado depois se sobrar tempo (fora de escopo deste
 
 - **Next.js 14+ (App Router, TypeScript)** — frontend e backend no mesmo projeto.
 - **Prisma** sobre **Postgres (Supabase)**.
-- **Auth.js** (Credentials provider, sessão JWT) para login com papéis.
+- **Autenticação própria**: sessão JWT (`jose`) em cookie httpOnly, senha com hash `bcryptjs`. Evita depender do Auth.js v5 (segue em beta; a v4 estável não foi desenhada para App Router).
 - **Anthropic API (Claude)** para os módulos de Agente de IA (SC-01, SC-11) — chamada real, com a chave fornecida via variável de ambiente.
 - **Deploy: Vercel**, com **Vercel Cron** para os disparos agendados.
+- **Tailwind CSS v4** para estilização, com os tokens de paleta e as fontes da seção 06 do desafio (Archivo, IBM Plex Sans, IBM Plex Mono) mapeados como variáveis de tema.
+- **Postgres local via Docker Compose** para desenvolvimento/testes, mesmo schema aplicado depois no Supabase em produção — evita depender de rede até o Supabase durante o desenvolvimento.
 
 ## 3. Modelo de dados (núcleo)
 
@@ -33,7 +35,7 @@ Comum a todos os módulos:
 - `Cliente` — empresa fictícia da carteira (CNPJ sintético válido em formato, razão social, atividade).
 - `Execucao` — histórico universal: código do módulo (string, ex. `"SC-20"`), quem disparou (usuário ou `scheduler`), início, fim, status (`SUCESSO` | `ERRO` | `PARCIAL`), resumo do resultado, mensagem de erro legível.
 
-O catálogo de módulos (código, nome, natureza, setor dono, rota) não é uma tabela — é fixo e conhecido em tempo de build, então vive como um registro estático no código (`src/lib/modulos-catalogo.ts`). `Execucao` referencia o módulo pelo código, sem FK.
+O catálogo de módulos (código, nome, natureza, setor dono, rota, `implementado: boolean`) não é uma tabela — é fixo e conhecido em tempo de build, então vive como um registro estático no código (`src/lib/modulos-catalogo.ts`). `Execucao` referencia o módulo pelo código, sem FK. A flag `implementado` começa `false` para os 4 módulos e vira `true` no plano que efetivamente entrega aquele módulo — a home só lista o que está `implementado`, conforme exigido pelo desafio.
 
 Específico por módulo, detalhado na seção 5.
 
@@ -99,7 +101,7 @@ Fluxo: upload/entrada de XML de NFS-e → parse dos itens → cada item passa pe
 
 ## 6. Autenticação e papéis
 
-- Auth.js, Credentials provider, sessão JWT.
+- Sessão própria: login via Server Action valida e-mail/senha (bcrypt) contra `Usuario`, gera um JWT assinado (`jose`, HS256) com `{ usuarioId, papel, setor, email }` e grava em cookie httpOnly (`sameSite=lax`, `secure` em produção), validade de 8h. Middleware do Next.js verifica o cookie em toda rota exceto `/login`; sessão ausente ou inválida redireciona para `/login`.
 - `ADMIN`: enxerga todos os módulos e o CRUD de configuração (termos de presunção, fluxos de tarefas).
 - `OPERADOR`: enxerga apenas os módulos do setor a que está vinculado.
 - Seed cria pelo menos 1 usuário de cada papel.
