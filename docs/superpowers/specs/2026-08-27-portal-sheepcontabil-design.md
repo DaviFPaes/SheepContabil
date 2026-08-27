@@ -31,8 +31,9 @@ Comum a todos os módulos:
 
 - `Usuario` — email, senha (hash), papel (`ADMIN` | `OPERADOR`), setor.
 - `Cliente` — empresa fictícia da carteira (CNPJ sintético válido em formato, razão social, atividade).
-- `Modulo` — catálogo dos módulos habilitados (código do catálogo, nome, natureza, setor dono).
-- `Execucao` — histórico universal: módulo, quem disparou (usuário ou `scheduler`), início, fim, status (`SUCESSO` | `ERRO` | `PARCIAL`), resumo do resultado, mensagem de erro legível.
+- `Execucao` — histórico universal: código do módulo (string, ex. `"SC-20"`), quem disparou (usuário ou `scheduler`), início, fim, status (`SUCESSO` | `ERRO` | `PARCIAL`), resumo do resultado, mensagem de erro legível.
+
+O catálogo de módulos (código, nome, natureza, setor dono, rota) não é uma tabela — é fixo e conhecido em tempo de build, então vive como um registro estático no código (`src/lib/modulos-catalogo.ts`). `Execucao` referencia o módulo pelo código, sem FK.
 
 Específico por módulo, detalhado na seção 5.
 
