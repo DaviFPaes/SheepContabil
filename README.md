@@ -1,36 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Portal SheepContabil
 
-## Getting Started
+Portal de automações da SheepContabil — desafio técnico de processo seletivo (Sheep Technology). Caso e empresa fictícios; dados sintéticos.
 
-First, run the development server:
+## Rodando localmente
+
+Pré-requisitos: Node.js 24+, Docker Desktop rodando.
 
 ```bash
+npm install
+cp .env.example .env
+# gere os dois segredos abaixo e cole no .env:
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+
+docker compose up -d db
+npx prisma migrate dev
+npx prisma db seed
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abra `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Credenciais de demonstração
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Perfil | E-mail | Senha |
+|---|---|---|
+| Administrador | admin@sheepcontabil.com.br | AdminSheep#2026 |
+| Operador (setor Processos) | operador.processos@sheepcontabil.com.br | OperadorSheep#2026 |
 
-## Learn More
+## Testes
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm test
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Suposições registradas
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Extratos bancários (SC-01) chegam em PDF nativo ou em foto (JPEG/PNG) — não em PDF escaneado sem OCR embutido; a leitura usa a API multimodal da Anthropic diretamente sobre o documento, sem etapa separada de OCR.
+- NFS-e (SC-11) chega em XML.
+- "Sistema de tarefas" e "sistema contábil" citados no catálogo do desafio são inteiramente mockados dentro deste portal — não há integração externa real em nenhum dos 4 módulos escolhidos.
+- O papel `OPERADOR` do seed está vinculado a um único setor, para demonstrar a segregação de visão.
 
-## Deploy on Vercel
+## Onde entraria o acesso real
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- `ANTHROPIC_API_KEY` no `.env` — chave real da Anthropic, usada pelos módulos SC-01 e SC-11 quando forem implementados.
+- `DATABASE_URL` em produção aponta para o Supabase, não para o Postgres local.
+- `CRON_SECRET` protege as rotas de disparo agendado (Vercel Cron) contra chamadas externas não autorizadas.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Estado atual
+
+A fundação do portal está completa e no ar apenas com a "casca": autenticação própria (sessão em cookie httpOnly, JWT assinado), proteção de rotas por middleware, cabeçalho com identidade visual da SheepContabil, motor genérico de execução de módulos (`executarModulo`/`listarHistorico`, com histórico e tratamento de erro) e a home com o catálogo de módulos filtrado por papel e setor.
+
+Nenhum dos 4 módulos do catálogo (SC-01, SC-11, SC-18, SC-20) está implementado ainda — todos começam com `implementado: false`, então a home mostra "Nenhum módulo disponível para o seu perfil ainda." para qualquer usuário logado. Cada módulo vira um plano de execução próprio; a flag correspondente só passa a `true` quando o módulo é entregue de verdade.
+
+## Documentação de design
+
+- [Spec de design](docs/superpowers/specs/2026-08-27-portal-sheepcontabil-design.md)
+- [Plano de implementação — fundação](docs/superpowers/plans/2026-08-27-fundacao-portal.md)
