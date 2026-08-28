@@ -13,9 +13,19 @@ export async function executarModulo(
   disparadoPor: string,
   executar: () => Promise<ResultadoExecucao>,
 ): Promise<ExecucaoRegistrada> {
-  const execucao = await prisma.execucao.create({
-    data: { moduloCodigo, disparadoPor, status: "PENDENTE" },
-  });
+  let execucao: ExecucaoRegistrada;
+
+  try {
+    execucao = await prisma.execucao.create({
+      data: { moduloCodigo, disparadoPor, status: "PENDENTE" },
+    });
+  } catch (erroCriacao) {
+    const mensagem =
+      erroCriacao instanceof Error
+        ? erroCriacao.message
+        : "Falha ao iniciar o registro de execução.";
+    throw new Error(mensagem);
+  }
 
   try {
     const resultado = await executar();
@@ -32,14 +42,20 @@ export async function executarModulo(
     const mensagem =
       erro instanceof Error ? erro.message : "Falha inesperada na execução.";
 
-    return await prisma.execucao.update({
-      where: { id: execucao.id },
-      data: {
-        status: "ERRO",
-        erro: mensagem,
-        finalizadoEm: new Date(),
-      },
-    });
+    try {
+      return await prisma.execucao.update({
+        where: { id: execucao.id },
+        data: {
+          status: "ERRO",
+          erro: mensagem,
+          finalizadoEm: new Date(),
+        },
+      });
+    } catch {
+      // Nao conseguiu nem gravar o status de erro (ex.: banco caiu no meio) -
+      // ainda assim devolve a mensagem legivel original, nao o erro cru do Prisma.
+      throw new Error(mensagem);
+    }
   }
 }
 

@@ -49,4 +49,18 @@ describe("executarModulo", () => {
     expect(historico[0].resumo).toBe("segunda");
     expect(historico[1].resumo).toBe("primeira");
   });
+
+  it("mesmo se o registro de erro nao puder ser salvo, ainda lanca a mensagem legivel original", async () => {
+    await expect(
+      executarModulo(MODULO_TESTE, "teste@sheepcontabil.com.br", async () => {
+        const [pendente] = await prisma.execucao.findMany({
+          where: { moduloCodigo: MODULO_TESTE, status: "PENDENTE" },
+          orderBy: { iniciadoEm: "desc" },
+          take: 1,
+        });
+        await prisma.execucao.delete({ where: { id: pendente.id } });
+        throw new Error("Falha original legivel.");
+      }),
+    ).rejects.toThrow("Falha original legivel.");
+  });
 });
