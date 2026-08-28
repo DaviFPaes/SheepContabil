@@ -1,14 +1,15 @@
 import { formatarDataHora, formatarDuracao } from "@/lib/formatar";
 import type { ExecucaoRegistrada } from "@/lib/execucao";
+import type { StatusExecucao } from "@/generated/prisma/client";
 
-const ROTULO_STATUS: Record<string, string> = {
+const ROTULO_STATUS: Record<StatusExecucao, string> = {
   PENDENTE: "Em andamento",
   SUCESSO: "Sucesso",
   ERRO: "Erro",
   PARCIAL: "Parcial",
 };
 
-const COR_STATUS: Record<string, string> = {
+const COR_STATUS: Record<StatusExecucao, string> = {
   PENDENTE: "text-grafite",
   SUCESSO: "text-turquesa",
   ERRO: "text-carmim",

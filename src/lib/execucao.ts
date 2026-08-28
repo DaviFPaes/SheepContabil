@@ -1,8 +1,9 @@
 import { prisma } from "@/lib/prisma";
-import type { Execucao } from "@/generated/prisma/client";
+import type { Execucao, StatusExecucao } from "@/generated/prisma/client";
+import { obterModulo } from "@/lib/modulos-catalogo";
 
 export type ResultadoExecucao = {
-  status: "SUCESSO" | "PARCIAL";
+  status: Extract<StatusExecucao, "SUCESSO" | "PARCIAL">;
   resumo: string;
 };
 
@@ -13,6 +14,12 @@ export async function executarModulo(
   disparadoPor: string,
   executar: () => Promise<ResultadoExecucao>,
 ): Promise<ExecucaoRegistrada> {
+  if (!obterModulo(moduloCodigo)) {
+    throw new Error(
+      `Código de módulo desconhecido: "${moduloCodigo}". Verifique o catálogo em modulos-catalogo.ts.`,
+    );
+  }
+
   let execucao: ExecucaoRegistrada;
 
   try {
@@ -20,11 +27,11 @@ export async function executarModulo(
       data: { moduloCodigo, disparadoPor, status: "PENDENTE" },
     });
   } catch (erroCriacao) {
-    const mensagem =
-      erroCriacao instanceof Error
-        ? erroCriacao.message
-        : "Falha ao iniciar o registro de execução.";
-    throw new Error(mensagem);
+    console.error(
+      "[executarModulo] falha ao criar registro de execução:",
+      erroCriacao,
+    );
+    throw new Error("Falha ao iniciar o registro de execução.");
   }
 
   try {
@@ -51,9 +58,13 @@ export async function executarModulo(
           finalizadoEm: new Date(),
         },
       });
-    } catch {
+    } catch (erroAtualizacao) {
       // Nao conseguiu nem gravar o status de erro (ex.: banco caiu no meio) -
       // ainda assim devolve a mensagem legivel original, nao o erro cru do Prisma.
+      console.error(
+        "[executarModulo] falha ao gravar status de erro:",
+        erroAtualizacao,
+      );
       throw new Error(mensagem);
     }
   }

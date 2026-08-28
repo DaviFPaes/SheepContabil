@@ -2,7 +2,10 @@ import { afterEach, describe, expect, it } from "vitest";
 import { prisma } from "@/lib/prisma";
 import { executarModulo, listarHistorico } from "./execucao";
 
-const MODULO_TESTE = "TESTE-FAKE";
+// SC-20 nao tem modulo real implementado ainda (implementado: false no
+// catalogo) - usado aqui so como codigo de catalogo valido para exercitar
+// o motor generico de execucao, sem conflitar com nenhum modulo de verdade.
+const MODULO_TESTE = "SC-20";
 
 afterEach(async () => {
   await prisma.execucao.deleteMany({ where: { moduloCodigo: MODULO_TESTE } });

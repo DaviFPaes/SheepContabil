@@ -12,6 +12,13 @@ const esquemaLogin = z.object({
   senha: z.string().min(1, "Informe a senha"),
 });
 
+// Hash fictício (nao corresponde a nenhuma senha real) usado só para igualar
+// o tempo de resposta entre "e-mail não existe" e "senha errada" — sem isso,
+// a ausência da chamada ao bcrypt para e-mail desconhecido vira um oráculo
+// de tempo que revela qual dos dois casos ocorreu.
+const HASH_FICTICIO_PARA_TIMING =
+  "$2a$10$CwTycUXWue0Thq9StjUM0uJ8G9jUZ8bA3TB9pQFPl4vFFHKQxtTQm";
+
 export type EstadoLogin = { erro: string } | null;
 
 export async function entrar(
@@ -31,13 +38,12 @@ export async function entrar(
     where: { email: dados.data.email },
   });
 
-  if (!usuario) {
-    return { erro: "E-mail ou senha incorretos." };
-  }
+  const senhaOk = await senhaConfere(
+    dados.data.senha,
+    usuario?.senhaHash ?? HASH_FICTICIO_PARA_TIMING,
+  );
 
-  const senhaOk = await senhaConfere(dados.data.senha, usuario.senhaHash);
-
-  if (!senhaOk) {
+  if (!usuario || !senhaOk) {
     return { erro: "E-mail ou senha incorretos." };
   }
 

@@ -7,11 +7,12 @@ Portal de automações da SheepContabil — desafio técnico de processo seletiv
 Pré-requisitos: Node.js 24+, Docker Desktop rodando.
 
 ```bash
-npm install
 cp .env.example .env
-# gere os dois segredos abaixo e cole no .env:
+# SESSION_SECRET e CRON_SECRET: rode o comando abaixo duas vezes, uma para
+# cada variável, e cole cada resultado no lugar certo no .env:
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 
+npm install
 docker compose up -d db
 npx prisma migrate dev
 npx prisma db seed
@@ -33,6 +34,8 @@ Abra `http://localhost:3000`.
 npm test
 ```
 
+Requer o Postgres local rodando e migrado (`docker compose up -d db` + `npx prisma migrate dev`) — `execucao.test.ts` fala com o banco de verdade, então sem o Docker de pé esse arquivo falha com um erro de conexão em vez de um aviso claro.
+
 ## Suposições registradas
 
 - Extratos bancários (SC-01) chegam em PDF nativo ou em foto (JPEG/PNG) — não em PDF escaneado sem OCR embutido; a leitura usa a API multimodal da Anthropic diretamente sobre o documento, sem etapa separada de OCR.
@@ -48,7 +51,7 @@ npm test
 
 ## Estado atual
 
-A fundação do portal está completa e no ar apenas com a "casca": autenticação própria (sessão em cookie httpOnly, JWT assinado), proteção de rotas por middleware, cabeçalho com identidade visual da SheepContabil, motor genérico de execução de módulos (`executarModulo`/`listarHistorico`, com histórico e tratamento de erro) e a home com o catálogo de módulos filtrado por papel e setor.
+A fundação do portal está pronta localmente apenas com a "casca" — o deploy é o próximo passo, ainda pendente: autenticação própria (sessão em cookie httpOnly, JWT assinado), proteção de rotas por middleware, cabeçalho com identidade visual da SheepContabil, motor genérico de execução de módulos (`executarModulo`/`listarHistorico`, com histórico e tratamento de erro) e a home com o catálogo de módulos filtrado por papel e setor.
 
 Nenhum dos 4 módulos do catálogo (SC-01, SC-11, SC-18, SC-20) está implementado ainda — todos começam com `implementado: false`, então a home mostra "Nenhum módulo disponível para o seu perfil ainda." para qualquer usuário logado. Cada módulo vira um plano de execução próprio; a flag correspondente só passa a `true` quando o módulo é entregue de verdade.
 

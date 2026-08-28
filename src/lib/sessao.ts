@@ -32,8 +32,12 @@ export async function criarTokenSessao(
 export async function verificarTokenSessao(
   token: string,
 ): Promise<PayloadSessao | null> {
+  const chave = obterChaveSecreta(); // deixa propagar se SESSION_SECRET faltar
+
   try {
-    const { payload } = await jwtVerify(token, obterChaveSecreta());
+    const { payload } = await jwtVerify(token, chave, {
+      algorithms: ["HS256"],
+    });
     return {
       usuarioId: String(payload.usuarioId),
       email: String(payload.email),
