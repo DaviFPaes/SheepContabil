@@ -1,0 +1,21 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: sheepcontabil-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: sheep
+      POSTGRES_PASSWORD: sheep
+      POSTGRES_DB: sheepcontabil
+    ports:
+      - "5433:5432"
+    volumes:
+      - sheep_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sheep -d sheepcontabil"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  sheep_db_data:

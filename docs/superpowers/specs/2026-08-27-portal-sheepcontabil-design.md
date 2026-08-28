@@ -132,7 +132,7 @@ Crons definidos em `vercel.json`, batendo em rotas de API protegidas por um segr
 ## 9. Repositório e deploy
 
 - Repositório público no GitHub, commits pequenos por etapa (fundação → módulo a módulo, ordem definida na seção 10), mensagens explicando o porquê.
-- `.env.example` documentando as variáveis necessárias (`DATABASE_URL`, `NEXTAUTH_SECRET`, `ANTHROPIC_API_KEY`, `CRON_SECRET`); segredo real nunca committado.
+- `.env.example` documentando as variáveis necessárias (`DATABASE_URL`, `SESSION_SECRET`, `ANTHROPIC_API_KEY`, `CRON_SECRET`); segredo real nunca committado.
 - README com: como rodar localmente, como popular o seed, suposições assumidas por módulo, e onde apontar "aqui entraria o acesso real" em cada fronteira mockada.
 - Deploy na Vercel, banco no Supabase (Postgres) de produção, variáveis de ambiente configuradas na Vercel.
 

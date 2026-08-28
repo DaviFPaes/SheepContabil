@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+@theme {
+  --color-petroleo: #10505f;
+  --color-turquesa: #1fa69a;
+  --color-ambar: #e8a33d;
+  --color-tinta: #0b1a20;
+  --color-grafite: #5a7078;
+  --color-nevoa: #eef3f4;
+  --color-carmim: #c4453d;
+
+  --font-titulo: var(--font-archivo), "Archivo", sans-serif;
+  --font-texto: var(--font-plex-sans), "IBM Plex Sans", sans-serif;
+  --font-codigo: var(--font-plex-mono), "IBM Plex Mono", monospace;
+}
+
+body {
+  background: var(--color-nevoa);
+  color: var(--color-tinta);
+  font-family: var(--font-texto);
+}
