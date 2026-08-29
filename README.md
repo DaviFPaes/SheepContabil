@@ -44,8 +44,10 @@ Banco no Supabase expõe duas connection strings, e cada uma vai para uma env va
 
 | Env var (Vercel) | String do Supabase | Para quê |
 |---|---|---|
-| `DATABASE_URL` | Pooler de transação — porta `6543`, usuário `postgres.<ref>`, host `...pooler.supabase.com` | App em runtime (serverless) |
-| `DIRECT_URL` | Conexão direta — porta `5432`, usuário `postgres`, host `db.<ref>.supabase.co` | `prisma migrate deploy` no build (o pooler não roda migração) |
+| `DATABASE_URL` | **Transaction pooler** — porta `6543`, usuário `postgres.<ref>`, host `...pooler.supabase.com` | App em runtime (serverless) |
+| `DIRECT_URL` | **Session pooler** — porta `5432`, usuário `postgres.<ref>`, host `...pooler.supabase.com` | `prisma migrate deploy` no build (o transaction pooler não roda migração) |
+
+> Não usar a conexão direta (`db.<ref>.supabase.co`) em nenhuma das duas: ela é só IPv6 e o build/runtime da Vercel não alcança. Os dois poolers são IPv4.
 
 Também setar na Vercel: `SESSION_SECRET`, `CRON_SECRET` (hex de 32 bytes cada), `ANTHROPIC_API_KEY` (a partir do SC-01).
 
