@@ -27,7 +27,13 @@ async function exigirAcessoSc20() {
 
 const esquemaCertificado = z.object({
   clienteId: z.string().min(1, "Selecione o cliente."),
-  dataValidade: z.coerce.date({ error: "Informe uma data de validade válida." }),
+  // `formData.get` devolve `null` quando o campo nao veio; sem o `z.string()`
+  // na frente, `z.coerce.date` transformaria isso em `new Date(null)` (epoch)
+  // e passaria. Exigir a string primeiro rejeita a data ausente.
+  dataValidade: z
+    .string()
+    .min(1, "Informe a data de validade.")
+    .pipe(z.coerce.date({ error: "Informe uma data de validade válida." })),
 });
 
 export type EstadoFormCertificado = { erro: string } | null;
@@ -92,6 +98,13 @@ export async function editarCertificado(
   const certificado = await prisma.certificado.findUnique({ where: { id } });
   if (!certificado) {
     return { erro: "Certificado não encontrado." };
+  }
+
+  const cliente = await prisma.cliente.findUnique({
+    where: { id: dados.data.clienteId },
+  });
+  if (!cliente) {
+    return { erro: "Cliente não encontrado." };
   }
 
   await prisma.certificado.update({
