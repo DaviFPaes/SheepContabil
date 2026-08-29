@@ -1,6 +1,6 @@
 import type { AvisoComCliente } from "@/lib/certificados/consultas";
 import type { FaixaUrgencia } from "@/lib/certificados/faixa-urgencia";
-import { formatarDataUTC } from "@/lib/certificados/formato";
+import { dataParaInput, formatarDataUTC } from "@/lib/certificados/formato";
 import { BadgeFaixa } from "./BadgeFaixa";
 
 // Filete lateral no tom da faixa: deixa a urgencia legivel ao correr o
@@ -54,7 +54,10 @@ export function ListaAvisos({ avisos }: { avisos: AvisoComCliente[] }) {
             </span>
             <span className="flex shrink-0 items-center gap-2">
               <BadgeFaixa faixa={aviso.faixa} />
-              <time className="font-codigo text-xs tabular-nums text-grafite">
+              <time
+                dateTime={dataParaInput(aviso.criadoEm)}
+                className="font-codigo text-xs tabular-nums text-grafite"
+              >
                 {formatarDataUTC(aviso.criadoEm)}
               </time>
             </span>

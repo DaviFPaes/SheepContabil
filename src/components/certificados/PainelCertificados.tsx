@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { CertificadoComStatus } from "@/lib/certificados/consultas";
-import { formatarDataUTC } from "@/lib/certificados/formato";
+import { dataParaInput, formatarDataUTC } from "@/lib/certificados/formato";
 import { BadgeFaixa } from "./BadgeFaixa";
 import { BotaoRemover } from "./BotaoRemover";
 
@@ -93,7 +93,9 @@ export function PainelCertificados({
                   {certificado.razaoSocial}
                 </td>
                 <td className={`${CELULA} font-codigo text-xs tabular-nums text-grafite`}>
-                  <time>{formatarDataUTC(certificado.dataValidade)}</time>
+                  <time dateTime={dataParaInput(certificado.dataValidade)}>
+                    {formatarDataUTC(certificado.dataValidade)}
+                  </time>
                 </td>
                 <td className={`${CELULA} whitespace-nowrap tabular-nums text-grafite`}>
                   {textoDias(certificado.diasRestantes)}

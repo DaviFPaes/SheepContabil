@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
+import type { FaixaUrgencia as FaixaUrgenciaPrisma } from "@/generated/prisma/client";
 import {
   calcularFaixa,
   deveGerarAviso,
   diasRestantes,
   mensagemAviso,
+  type FaixaUrgencia,
 } from "./faixa-urgencia";
 
 describe("diasRestantes", () => {
@@ -53,6 +55,22 @@ describe("deveGerarAviso", () => {
 
   it("gera aviso quando a faixa mudou para uma mais urgente", () => {
     expect(deveGerarAviso("CRITICO", "ALERTA")).toBe(true);
+  });
+});
+
+describe("ponte FaixaUrgencia (enum Prisma <-> union do dominio)", () => {
+  it("mantem os dois tipos mutuamente atribuiveis (guarda de compilacao)", () => {
+    // Igualdade exata em nivel de tipo. Se schema.prisma ganhar ou perder uma
+    // faixa sem o mesmo ajuste em faixa-urgencia.ts, uma das direcoes deixa de
+    // valer, `Exato<>` vira `false` e `const ... = true` para de compilar — o
+    // gate `tsc --noEmit` quebra antes do build.
+    type Exato<A, B> = [A] extends [B]
+      ? [B] extends [A]
+        ? true
+        : false
+      : false;
+    const pontesOk: Exato<FaixaUrgencia, FaixaUrgenciaPrisma> = true;
+    expect(pontesOk).toBe(true);
   });
 });
 
