@@ -36,6 +36,23 @@ npm test
 
 Requer o Postgres local rodando e migrado (`docker compose up -d db` + `npx prisma migrate dev`) — `execucao.test.ts` fala com o banco de verdade, então sem o Docker de pé esse arquivo falha com um erro de conexão em vez de um aviso claro.
 
+## Deploy
+
+Produção: **[sheep-contabil.vercel.app](https://sheep-contabil.vercel.app)** — Vercel (build a partir do `master`) + Supabase (Postgres).
+
+Banco no Supabase expõe duas connection strings, e cada uma vai para uma env var diferente:
+
+| Env var (Vercel) | String do Supabase | Para quê |
+|---|---|---|
+| `DATABASE_URL` | Pooler de transação — porta `6543`, usuário `postgres.<ref>`, host `...pooler.supabase.com` | App em runtime (serverless) |
+| `DIRECT_URL` | Conexão direta — porta `5432`, usuário `postgres`, host `db.<ref>.supabase.co` | `prisma migrate deploy` no build (o pooler não roda migração) |
+
+Também setar na Vercel: `SESSION_SECRET`, `CRON_SECRET` (hex de 32 bytes cada), `ANTHROPIC_API_KEY` (a partir do SC-01).
+
+O `build` roda `prisma migrate deploy && next build`, então cada push no `master` aplica as migrações pendentes no Supabase antes de publicar. O seed **não** roda no deploy — é aplicado uma vez, manualmente, apontando `DATABASE_URL` para a conexão direta do Supabase e rodando `npx prisma db seed`.
+
+Mudança de env var na Vercel só passa a valer no **próximo deploy** (Redeploy manual ou novo push).
+
 ## Suposições registradas
 
 - Extratos bancários (SC-01) chegam em PDF nativo ou em foto (JPEG/PNG) — não em PDF escaneado sem OCR embutido; a leitura usa a API multimodal da Anthropic diretamente sobre o documento, sem etapa separada de OCR.
@@ -46,12 +63,12 @@ Requer o Postgres local rodando e migrado (`docker compose up -d db` + `npx pris
 ## Onde entraria o acesso real
 
 - `ANTHROPIC_API_KEY` no `.env` — chave real da Anthropic, usada pelos módulos SC-01 e SC-11 quando forem implementados.
-- `DATABASE_URL` em produção aponta para o Supabase, não para o Postgres local.
+- `DATABASE_URL`/`DIRECT_URL` em produção apontam para o Supabase, não para o Postgres local.
 - `CRON_SECRET` protege as rotas de disparo agendado (Vercel Cron) contra chamadas externas não autorizadas.
 
 ## Estado atual
 
-A fundação do portal está pronta localmente apenas com a "casca" — o deploy é o próximo passo, ainda pendente: autenticação própria (sessão em cookie httpOnly, JWT assinado), proteção de rotas por middleware, cabeçalho com identidade visual da SheepContabil, motor genérico de execução de módulos (`executarModulo`/`listarHistorico`, com histórico e tratamento de erro) e a home com o catálogo de módulos filtrado por papel e setor.
+A fundação do portal está no ar (ver **Deploy**): autenticação própria (sessão em cookie httpOnly, JWT assinado), proteção de rotas por middleware, cabeçalho com identidade visual da SheepContabil, motor genérico de execução de módulos (`executarModulo`/`listarHistorico`, com histórico e tratamento de erro) e a home com o catálogo de módulos filtrado por papel e setor.
 
 Nenhum dos 4 módulos do catálogo (SC-01, SC-11, SC-18, SC-20) está implementado ainda — todos começam com `implementado: false`, então a home mostra "Nenhum módulo disponível para o seu perfil ainda." para qualquer usuário logado. Cada módulo vira um plano de execução próprio; a flag correspondente só passa a `true` quando o módulo é entregue de verdade.
 
