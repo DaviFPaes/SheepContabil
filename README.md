@@ -69,7 +69,7 @@ Painel dos certificados digitais da carteira, classificados por faixa de urgênc
 | `PRÓXIMO` | 31 a 60 |
 | `OK` | mais de 60 (sem aviso) |
 
-Ao rodar (botão **Rodar agora** ou cron mensal `/api/cron/sc-20`, dia 1 às 08:00 UTC), o módulo varre os certificados dentro de 60 dias e cria um `AvisoCertificado` — com o texto pronto da mensagem — **só quando a faixa mudou** desde o último aviso daquele certificado. Isso evita repetir a lista inteira todo mês.
+Ao rodar (botão **Rodar agora** ou cron mensal `/api/cron/sc-20`, dia 1 às 08:00 UTC), o módulo varre os certificados **já vencidos ou a até 60 dias de vencer** e cria um `AvisoCertificado` — com o texto pronto da mensagem — **só quando a faixa mudou** desde o último aviso daquele certificado. Isso evita repetir a lista inteira todo mês.
 
 CRUD de certificados na própria página (cliente + data de validade). Visível para o `ADMIN` e para operadores do setor **Processos**.
 
@@ -81,6 +81,7 @@ Fronteira mockada: o `AvisoCertificado` guarda a mensagem, mas **não há envio 
 - NFS-e (SC-11) chega em XML.
 - "Sistema de tarefas" e "sistema contábil" citados no catálogo do desafio são inteiramente mockados dentro deste portal — não há integração externa real em nenhum dos 4 módulos escolhidos.
 - O papel `OPERADOR` do seed está vinculado a um único setor, para demonstrar a segregação de visão.
+- SC-20 calcula `diasRestantes` e as faixas contra o "hoje" em **UTC**. No fuso de São Paulo (UTC-3), entre ~21:00 e a meia-noite um certificado pode ser classificado numa faixa um dia mais urgente do que o calendário local indicaria — aceitável para um aviso mensal.
 
 ## Onde entraria o acesso real
 
