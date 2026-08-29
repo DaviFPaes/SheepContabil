@@ -13,16 +13,27 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ erro: "Não autorizado." }, { status: 401 });
   }
 
-  const execucao = await executarModulo(
-    "SC-20",
-    "scheduler",
-    processarAvisosCertificados,
-  );
+  try {
+    const execucao = await executarModulo(
+      "SC-20",
+      "scheduler",
+      processarAvisosCertificados,
+    );
 
-  return NextResponse.json({
-    execucaoId: execucao.id,
-    status: execucao.status,
-    resumo: execucao.resumo,
-    erro: execucao.erro,
-  });
+    return NextResponse.json({
+      execucaoId: execucao.id,
+      status: execucao.status,
+      resumo: execucao.resumo,
+      erro: execucao.erro,
+    });
+  } catch (erro) {
+    // executarModulo lanca se nem o registro PENDENTE puder ser criado (ex.:
+    // banco fora do ar). Sem este catch o cron devolveria um 500 cru, sem o
+    // campo `erro` que o contrato JSON promete.
+    console.error("[cron/sc-20] falha ao executar o módulo:", erro);
+    return NextResponse.json(
+      { erro: "Falha ao executar o módulo." },
+      { status: 500 },
+    );
+  }
 }
