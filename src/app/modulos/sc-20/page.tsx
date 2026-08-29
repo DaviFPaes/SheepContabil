@@ -14,6 +14,9 @@ import { rodarAgora } from "@/lib/certificados/acoes";
 import { PainelCertificados } from "@/components/certificados/PainelCertificados";
 import { FormularioCertificado } from "@/components/certificados/FormularioCertificado";
 import { ListaAvisos } from "@/components/certificados/ListaAvisos";
+import { BotaoRodarAgora } from "@/components/certificados/BotaoRodarAgora";
+
+const LIMITE_AVISOS = 50;
 
 function contar(qtd: number, singular: string, plural: string): string {
   return `${qtd} ${qtd === 1 ? singular : plural}`;
@@ -70,25 +73,12 @@ export default async function PaginaSc20({
         acoes={
           <div className="flex flex-col gap-2">
             <form action={rodarAgora}>
-              <button className="inline-flex items-center gap-2 rounded bg-petroleo px-4 py-2 font-texto text-sm font-semibold text-nevoa transition-colors hover:bg-turquesa focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-petroleo motion-reduce:transition-none">
-                <svg
-                  aria-hidden="true"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={1.75}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="h-4 w-4"
-                >
-                  <path d="M7 4.5v15l12-7.5z" />
-                </svg>
-                Rodar agora
-              </button>
+              <BotaoRodarAgora />
             </form>
             <p className="max-w-prose font-texto text-xs text-grafite">
-              Varre os certificados da carteira e emite avisos para os que vencem
-              nos próximos 60 dias. Cada execução aparece no histórico abaixo.
+              Varre os certificados da carteira e emite avisos para os que já
+              estão vencidos ou vencem nos próximos 60 dias. Cada execução
+              aparece no histórico abaixo.
             </p>
           </div>
         }
@@ -119,6 +109,7 @@ export default async function PaginaSc20({
                 </p>
               </div>
               <FormularioCertificado
+                key={certificadoEmEdicao?.id ?? "novo"}
                 clientes={clientes}
                 certificado={certificadoEmEdicao}
               />
@@ -152,7 +143,9 @@ export default async function PaginaSc20({
                   </h2>
                   {avisos.length > 0 ? (
                     <span className="font-codigo text-xs tabular-nums text-grafite">
-                      {contar(avisos.length, "aviso", "avisos")}
+                      {avisos.length === LIMITE_AVISOS
+                        ? "(últimos 50)"
+                        : contar(avisos.length, "aviso", "avisos")}
                     </span>
                   ) : null}
                 </div>
