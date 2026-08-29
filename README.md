@@ -55,6 +55,26 @@ O `build` roda `prisma migrate deploy && next build`, então cada push no `maste
 
 Mudança de env var na Vercel só passa a valer no **próximo deploy** (Redeploy manual ou novo push).
 
+## Módulos
+
+### SC-20 — Vencimento de certificado digital
+
+Painel dos certificados digitais da carteira, classificados por faixa de urgência de vencimento:
+
+| Faixa | Dias para vencer |
+|---|---|
+| `VENCIDO` | já venceu |
+| `CRÍTICO` | 0 a 7 |
+| `ALERTA` | 8 a 30 |
+| `PRÓXIMO` | 31 a 60 |
+| `OK` | mais de 60 (sem aviso) |
+
+Ao rodar (botão **Rodar agora** ou cron mensal `/api/cron/sc-20`, dia 1 às 08:00 UTC), o módulo varre os certificados dentro de 60 dias e cria um `AvisoCertificado` — com o texto pronto da mensagem — **só quando a faixa mudou** desde o último aviso daquele certificado. Isso evita repetir a lista inteira todo mês.
+
+CRUD de certificados na própria página (cliente + data de validade). Visível para o `ADMIN` e para operadores do setor **Processos**.
+
+Fronteira mockada: o `AvisoCertificado` guarda a mensagem, mas **não há envio real** — aqui entraria a integração com e-mail / sistema de avisos. A rota de cron é protegida por `CRON_SECRET` no header `Authorization: Bearer`.
+
 ## Suposições registradas
 
 - Extratos bancários (SC-01) chegam em PDF nativo ou em foto (JPEG/PNG) — não em PDF escaneado sem OCR embutido; a leitura usa a API multimodal da Anthropic diretamente sobre o documento, sem etapa separada de OCR.

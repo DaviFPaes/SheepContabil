@@ -61,9 +61,45 @@ async function seedClientes() {
   }
 }
 
+const CERTIFICADOS = [
+  { clienteBase: "22333444", diasAteVencer: -3 }, // Clínica Vida Plena -> VENCIDO
+  { clienteBase: "11222333", diasAteVencer: 5 }, // Alfa Comércio -> CRÍTICO
+  { clienteBase: "33444555", diasAteVencer: 20 }, // Beta Consultoria -> ALERTA
+  { clienteBase: "44555666", diasAteVencer: 45 }, // Transportadora Rota Certa -> PRÓXIMO
+  { clienteBase: "55666777", diasAteVencer: 90 }, // Consultório Sorriso -> OK (fora da janela)
+];
+
+async function seedCertificados() {
+  for (const item of CERTIFICADOS) {
+    const cnpj = gerarCnpjValido(item.clienteBase);
+    const cliente = await prisma.cliente.findUnique({ where: { cnpj } });
+    if (!cliente) continue;
+
+    const dataValidade = new Date();
+    dataValidade.setUTCHours(0, 0, 0, 0);
+    dataValidade.setUTCDate(dataValidade.getUTCDate() + item.diasAteVencer);
+
+    const existente = await prisma.certificado.findFirst({
+      where: { clienteId: cliente.id },
+    });
+
+    if (existente) {
+      await prisma.certificado.update({
+        where: { id: existente.id },
+        data: { dataValidade },
+      });
+    } else {
+      await prisma.certificado.create({
+        data: { clienteId: cliente.id, dataValidade },
+      });
+    }
+  }
+}
+
 async function main() {
   await seedUsuarios();
   await seedClientes();
+  await seedCertificados();
 }
 
 main()
