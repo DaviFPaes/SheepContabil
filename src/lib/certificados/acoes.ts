@@ -27,7 +27,7 @@ async function exigirAcessoSc20() {
 
 const esquemaCertificado = z.object({
   clienteId: z.string().min(1, "Selecione o cliente."),
-  dataValidade: z.coerce.date({ message: "Informe uma data de validade válida." }),
+  dataValidade: z.coerce.date({ error: "Informe uma data de validade válida." }),
 });
 
 export type EstadoFormCertificado = { erro: string } | null;
