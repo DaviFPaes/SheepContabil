@@ -1,8 +1,18 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { prisma } from "@/lib/prisma";
 import { processarAvisosCertificados } from "./processar";
 
 const CNPJ_TESTE = "99.999.999/0001-99";
+
+// "Hoje" fixo: o motor varre TODOS os certificados, entao as datas dos certs
+// de teste sao ancoradas neste valor (nao em `new Date()`) para o calculo de
+// dias ser deterministico independentemente de quando a suite roda.
+const HOJE = new Date("2026-08-29T12:00:00Z");
+
+// Marca do inicio de cada teste. O `afterEach` apaga TODO aviso criado a
+// partir daqui — inclusive os que o motor emite para os certificados do seed —
+// para nao envenenar a demo semeada.
+let testStart: Date;
 
 async function criarClienteTeste() {
   return prisma.cliente.create({
@@ -14,16 +24,21 @@ async function criarClienteTeste() {
   });
 }
 
-function dataDaqui(dias: number): Date {
-  const d = new Date();
+function dataRelativaAHoje(dias: number): Date {
+  const d = new Date(HOJE);
   d.setUTCHours(0, 0, 0, 0);
   d.setUTCDate(d.getUTCDate() + dias);
   return d;
 }
 
+beforeEach(() => {
+  testStart = new Date();
+});
+
 afterEach(async () => {
+  vi.restoreAllMocks();
   await prisma.avisoCertificado.deleteMany({
-    where: { certificado: { cliente: { cnpj: CNPJ_TESTE } } },
+    where: { criadoEm: { gte: testStart } },
   });
   await prisma.certificado.deleteMany({
     where: { cliente: { cnpj: CNPJ_TESTE } },
@@ -35,10 +50,10 @@ describe("processarAvisosCertificados", () => {
   it("cria um aviso CRITICO para certificado vencendo em 5 dias", async () => {
     const cliente = await criarClienteTeste();
     const certificado = await prisma.certificado.create({
-      data: { clienteId: cliente.id, dataValidade: dataDaqui(5) },
+      data: { clienteId: cliente.id, dataValidade: dataRelativaAHoje(5) },
     });
 
-    const resultado = await processarAvisosCertificados();
+    const resultado = await processarAvisosCertificados(HOJE);
     expect(resultado.status).toBe("SUCESSO");
 
     const avisos = await prisma.avisoCertificado.findMany({
@@ -53,11 +68,11 @@ describe("processarAvisosCertificados", () => {
   it("nao cria aviso repetido quando a faixa nao mudou", async () => {
     const cliente = await criarClienteTeste();
     const certificado = await prisma.certificado.create({
-      data: { clienteId: cliente.id, dataValidade: dataDaqui(5) },
+      data: { clienteId: cliente.id, dataValidade: dataRelativaAHoje(5) },
     });
 
-    await processarAvisosCertificados();
-    await processarAvisosCertificados();
+    await processarAvisosCertificados(HOJE);
+    await processarAvisosCertificados(HOJE);
 
     const avisos = await prisma.avisoCertificado.findMany({
       where: { certificadoId: certificado.id },
@@ -68,20 +83,20 @@ describe("processarAvisosCertificados", () => {
   it("cria um novo aviso quando a faixa piora", async () => {
     const cliente = await criarClienteTeste();
     const certificado = await prisma.certificado.create({
-      data: { clienteId: cliente.id, dataValidade: dataDaqui(20) },
+      data: { clienteId: cliente.id, dataValidade: dataRelativaAHoje(20) },
     });
 
-    await processarAvisosCertificados(); // ALERTA
+    await processarAvisosCertificados(HOJE); // ALERTA
 
     await prisma.certificado.update({
       where: { id: certificado.id },
-      data: { dataValidade: dataDaqui(3) },
+      data: { dataValidade: dataRelativaAHoje(3) },
     });
-    await processarAvisosCertificados(); // CRITICO
+    await processarAvisosCertificados(HOJE); // CRITICO
 
     const avisos = await prisma.avisoCertificado.findMany({
       where: { certificadoId: certificado.id },
-      orderBy: { criadoEm: "asc" },
+      orderBy: [{ criadoEm: "asc" }, { id: "asc" }],
     });
     expect(avisos.map((a) => a.faixa)).toEqual(["ALERTA", "CRITICO"]);
   });
@@ -89,14 +104,48 @@ describe("processarAvisosCertificados", () => {
   it("ignora certificado fora da janela de 60 dias", async () => {
     const cliente = await criarClienteTeste();
     const certificado = await prisma.certificado.create({
-      data: { clienteId: cliente.id, dataValidade: dataDaqui(90) },
+      data: { clienteId: cliente.id, dataValidade: dataRelativaAHoje(90) },
     });
 
-    await processarAvisosCertificados();
+    await processarAvisosCertificados(HOJE);
 
     const avisos = await prisma.avisoCertificado.findMany({
       where: { certificadoId: certificado.id },
     });
     expect(avisos).toHaveLength(0);
+  });
+
+  it("devolve PARCIAL quando um aviso falha, sem abortar os demais", async () => {
+    const cliente = await criarClienteTeste();
+    await prisma.certificado.create({
+      data: { clienteId: cliente.id, dataValidade: dataRelativaAHoje(5) },
+    });
+    await prisma.certificado.create({
+      data: { clienteId: cliente.id, dataValidade: dataRelativaAHoje(20) },
+    });
+
+    const createOriginal = prisma.avisoCertificado.create;
+    const createSpy = vi.spyOn(prisma.avisoCertificado, "create");
+    createSpy.mockImplementationOnce(
+      () =>
+        Promise.reject(
+          new Error("falha simulada ao gravar aviso"),
+        ) as unknown as ReturnType<typeof createOriginal>,
+    );
+    createSpy.mockImplementation(createOriginal);
+    const erroSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const resultado = await processarAvisosCertificados(HOJE);
+
+    expect(resultado.status).toBe("PARCIAL");
+    expect(resultado.resumo).toContain("1 certificado(s) falharam");
+    expect(erroSpy).toHaveBeenCalled();
+
+    // A falha em um item nao derrubou o lote: pelo menos um aviso posterior
+    // continua gravado.
+    const gravados = await prisma.avisoCertificado.count({
+      where: { criadoEm: { gte: testStart } },
+    });
+    expect(gravados).toBeGreaterThan(0);
   });
 });

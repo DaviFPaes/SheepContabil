@@ -11,17 +11,21 @@ import {
 
 const JANELA_DIAS = 60;
 
-export async function processarAvisosCertificados(): Promise<ResultadoExecucao> {
+export async function processarAvisosCertificados(
+  hoje: Date = new Date(),
+): Promise<ResultadoExecucao> {
   const certificados = await prisma.certificado.findMany({
     include: {
       cliente: true,
-      avisos: { orderBy: { criadoEm: "desc" }, take: 1 },
+      // Desempate por id: sob empate de milissegundo em criadoEm, a escolha
+      // da "ultima faixa avisada" precisa ser deterministica.
+      avisos: { orderBy: [{ criadoEm: "desc" }, { id: "desc" }], take: 1 },
     },
     orderBy: { dataValidade: "asc" },
   });
 
-  const hoje = new Date();
   let avisosNovos = 0;
+  let falhas = 0;
   const contagemPorFaixa = new Map<FaixaUrgencia, number>();
 
   for (const certificado of certificados) {
@@ -34,18 +38,30 @@ export async function processarAvisosCertificados(): Promise<ResultadoExecucao> 
 
     if (!deveGerarAviso(faixaAtual, faixaUltimoAviso)) continue;
 
-    await prisma.avisoCertificado.create({
-      data: {
-        certificadoId: certificado.id,
-        faixa: faixaAtual,
-        diasRestantes: dias,
-        mensagem: mensagemAviso(
-          certificado.cliente.razaoSocial,
-          dias,
-          faixaAtual,
-        ),
-      },
-    });
+    try {
+      await prisma.avisoCertificado.create({
+        data: {
+          certificadoId: certificado.id,
+          faixa: faixaAtual,
+          diasRestantes: dias,
+          mensagem: mensagemAviso(
+            certificado.cliente.razaoSocial,
+            dias,
+            faixaAtual,
+          ),
+        },
+      });
+    } catch (erro) {
+      // Falha em um certificado nao aborta o lote: os avisos ja gravados
+      // ficam, este certificado entra na contagem de falhas e a execucao
+      // termina como PARCIAL (spec §5.1 / §12 — processamento granular).
+      falhas += 1;
+      console.error(
+        `[processarAvisosCertificados] falha ao criar aviso do certificado ${certificado.id}:`,
+        erro,
+      );
+      continue;
+    }
 
     avisosNovos += 1;
     contagemPorFaixa.set(
@@ -54,10 +70,16 @@ export async function processarAvisosCertificados(): Promise<ResultadoExecucao> 
     );
   }
 
+  const status: ResultadoExecucao["status"] =
+    falhas > 0 ? "PARCIAL" : "SUCESSO";
+  const sufixoFalhas =
+    falhas > 0 ? `; ${falhas} certificado(s) falharam` : "";
+  const total = certificados.length;
+
   if (avisosNovos === 0) {
     return {
-      status: "SUCESSO",
-      resumo: `${certificados.length} certificados avaliados, nenhum aviso novo.`,
+      status,
+      resumo: `${total} certificados na carteira, nenhum aviso novo${sufixoFalhas}.`,
     };
   }
 
@@ -66,7 +88,7 @@ export async function processarAvisosCertificados(): Promise<ResultadoExecucao> 
     .join(", ");
 
   return {
-    status: "SUCESSO",
-    resumo: `${certificados.length} certificados avaliados, ${avisosNovos} aviso(s) novo(s): ${detalhe}.`,
+    status,
+    resumo: `${total} certificados na carteira, ${avisosNovos} aviso(s) novo(s): ${detalhe}${sufixoFalhas}.`,
   };
 }
