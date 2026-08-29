@@ -46,7 +46,7 @@ export const CATALOGO_MODULOS: ModuloCatalogo[] = [
     setorDono: "Processos",
     descricao:
       "Painel e aviso de certificados digitais de clientes perto do vencimento.",
-    implementado: false,
+    implementado: true,
   },
 ];
 
