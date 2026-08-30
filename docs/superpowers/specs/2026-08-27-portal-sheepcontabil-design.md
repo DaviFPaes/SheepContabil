@@ -4,18 +4,19 @@ Data: 2026-08-27
 Prazo de entrega: 2026-09-01
 Contexto: desafio técnico de processo seletivo (automação de processos, caso fictício SheepContabil).
 
+**Atualização 2026-08-30:** o SC-18 (RPA) saiu do escopo por tempo. A entrega passa a ser 3 módulos — SC-20, SC-01, SC-11 — priorizando profundidade em dois agentes de IA reais + um controle sistematizado, em vez de espalhar. Consequência assumida: a natureza **RPA fica sem cobertura**. Seções abaixo já refletem os 3.
+
 ## 1. Escopo
 
-Quatro processos do catálogo, cobrindo as três naturezas exigidas:
+Três processos do catálogo:
 
 | Código | Nome | Natureza | Complexidade | Frequência catalogada |
 |---|---|---|---|---|
+| SC-20 | Vencimento de certificado digital | Controle sistematizado | Baixa | Mensal |
 | SC-01 | Conversão de extrato bancário para OFX | Agente de IA | Alta | Mensal |
 | SC-11 | Presunção correta nas notas de serviço da área médica | Agente de IA | Alta | Mensal |
-| SC-18 | Tarefas encadeadas por tipo de processo | RPA | Média | Diário |
-| SC-20 | Vencimento de certificado digital | Controle sistematizado | Baixa | Mensal |
 
-Um 5º processo pode ser adicionado depois se sobrar tempo (fora de escopo deste plano).
+Das três naturezas do desafio, ficam cobertas Agente de IA e Controle sistematizado; RPA não (era o SC-18, cortado — ver §14).
 
 ## 2. Stack
 
@@ -35,7 +36,7 @@ Comum a todos os módulos:
 - `Cliente` — empresa fictícia da carteira (CNPJ sintético válido em formato, razão social, atividade).
 - `Execucao` — histórico universal: código do módulo (string, ex. `"SC-20"`), quem disparou (usuário ou `scheduler`), início, fim, status (`SUCESSO` | `ERRO` | `PARCIAL`), resumo do resultado, mensagem de erro legível.
 
-O catálogo de módulos (código, nome, natureza, setor dono, rota, `implementado: boolean`) não é uma tabela — é fixo e conhecido em tempo de build, então vive como um registro estático no código (`src/lib/modulos-catalogo.ts`). `Execucao` referencia o módulo pelo código, sem FK. A flag `implementado` começa `false` para os 4 módulos e vira `true` no plano que efetivamente entrega aquele módulo — a home só lista o que está `implementado`, conforme exigido pelo desafio.
+O catálogo de módulos (código, nome, natureza, setor dono, rota, `implementado: boolean`) não é uma tabela — é fixo e conhecido em tempo de build, então vive como um registro estático no código (`src/lib/modulos-catalogo.ts`). `Execucao` referencia o módulo pelo código, sem FK. A flag `implementado` começa `false` e vira `true` no plano que efetivamente entrega aquele módulo — a home só lista o que está `implementado`, conforme exigido pelo desafio. O SC-18 permanece listado no catálogo com `implementado: false` (documenta o processo do catálogo que não foi entregue); nunca aparece na home.
 
 Específico por módulo, detalhado na seção 5.
 
@@ -84,12 +85,7 @@ Fluxo: upload/entrada de XML de NFS-e → parse dos itens → cada item passa pe
 
 ### 5.4 SC-18 — Tarefas encadeadas por tipo de processo
 
-- `Tarefa` (mock interno do sistema de tarefas real): cliente, tipo, responsável, prazo, status `ABERTA` | `CONCLUIDA`, tarefaOrigemId.
-- `FluxoDefinicao` (tipo de processo gatilho → lista de etapas seguintes, cada uma com tipo de tarefa, responsável e prazo relativo em dias) — dado configurável no banco, editável pelo admin numa tela, não uma regra escrita no código.
-- Ao marcar uma tarefa como concluída na UI, o motor verifica se aquele tipo dispara próximas etapas e cria as tarefas seguintes automaticamente, dentro de uma transação (todas as etapas seguintes nascem juntas, ou nenhuma).
-- Painel mostra em que ponto da corrente cada caso está.
-- Complemento (corta primeiro se faltar tempo): cron diário sinalizando tarefas perto do prazo.
-- Seed: 2-3 fluxos de exemplo, com tarefas em estágios diferentes da corrente.
+**Cortado do escopo em 2026-08-30 (ver §14).** Era o único módulo RPA. O desenho previsto: `Tarefa` (cliente, tipo, responsável, prazo, status, `tarefaOrigemId`) + `FluxoDefinicao` editável pelo admin; ao concluir uma tarefa, o motor cria as etapas seguintes numa transação; painel mostra onde cada caso está na corrente.
 
 ### 5.5 SC-20 — Vencimento de certificado digital
 
@@ -110,10 +106,9 @@ Fluxo: upload/entrada de XML de NFS-e → parse dos itens → cada item passa pe
 
 | Módulo | Disparo sob demanda | Disparo automático |
 |---|---|---|
+| SC-20 | Botão "rodar agora" | Cron mensal |
 | SC-01 | Upload avulso + botão "rodar agora" | Cron mensal varrendo a caixa de entrada |
 | SC-11 | Upload avulso + botão "rodar agora" | Cron mensal varrendo a caixa de entrada |
-| SC-18 | Botão "rodar agora" (reprocessar pendências) | Reativo: ao concluir uma tarefa; cron diário de sinalização é enriquecimento opcional |
-| SC-20 | Botão "rodar agora" | Cron mensal |
 
 Crons definidos em `vercel.json`, batendo em rotas de API protegidas por um segredo (`CRON_SECRET` em header; 401 se não bater).
 
@@ -123,11 +118,10 @@ Crons definidos em `vercel.json`, batendo em rotas de API protegidas por um segr
 
 - 1 usuário admin + 1 usuário operador (setor definido).
 - ~8-10 clientes fictícios, CNPJ sintético com dígito verificador válido em formato, nomes inventados, atividades variadas.
+- Certificados cobrindo todas as faixas de urgência (SC-20).
 - 3 extratos bancários em PDF com leiautes diferentes, mais 1 em foto (imagem) (SC-01).
 - 2-3 XMLs de NFS-e, incluindo um caso com muitos itens (SC-11).
 - Lista inicial de termos de presunção (SC-11).
-- 2-3 fluxos de tarefas encadeadas com tarefas em estágios diferentes (SC-18).
-- Certificados cobrindo todas as faixas de urgência (SC-20).
 
 ## 9. Repositório e deploy
 
@@ -138,20 +132,18 @@ Crons definidos em `vercel.json`, batendo em rotas de API protegidas por um segr
 
 ## 10. Ordem de implementação
 
-1. Fundação: schema Prisma, autenticação, shell do portal (home listando módulos por papel), motor de execução comum, histórico de execução genérico.
-2. SC-20 (mais simples) — valida o padrão ponta a ponta (módulo → execução → histórico → painel).
-3. SC-18.
-4. SC-01.
-5. SC-11 (mais complexo, por último, já com o padrão de IA e caixa de entrada testado a partir do SC-01).
+1. Fundação: schema Prisma, autenticação, shell do portal (home listando módulos por papel), motor de execução comum, histórico de execução genérico. **(feito)**
+2. SC-20 (mais simples) — valida o padrão ponta a ponta (módulo → execução → histórico → painel). **(feito — mergeado no `master` local)**
+3. SC-01 (extrato bancário → OFX).
+4. SC-11 (mais complexo, por último, já com o padrão de IA e caixa de entrada testado a partir do SC-01).
 
 ## 11. Testes
 
 Foco em lógica de negócio pura, sem e2e/UI dado o prazo:
 
-- Gerador de OFX a partir de transações estruturadas.
-- Motor de matching de termos de presunção (SC-11).
-- Motor de encadeamento de tarefas: dado um fluxo e uma tarefa concluída, gera exatamente as tarefas esperadas (SC-18).
 - Cálculo de mudança de faixa de urgência de certificado (SC-20).
+- Gerador de OFX a partir de transações estruturadas (SC-01).
+- Motor de matching de termos de presunção (SC-11).
 
 E2E fica registrado como "o que eu faria com mais tempo" para a apresentação.
 
@@ -159,17 +151,17 @@ E2E fica registrado como "o que eu faria com mais tempo" para a apresentação.
 
 - Erro conhecido (PDF ilegível, XML malformado, LLM indisponível) vira mensagem legível na tela; erro desconhecido cai num genérico com detalhe técnico escondido atrás de "ver mais".
 - Processamento em lote é granular por documento (seção 5.1): falha no meio não derruba o que já deu certo.
-- Encadeamento de tarefas roda em transação (seção 5.4).
 
 ## 13. Suposições registradas
 
 - Extratos chegam em PDF (nativo ou escaneado) ou em foto (JPEG/PNG); a leitura dos dois formatos é feita pela API multimodal da Anthropic, sem pipeline de OCR dedicado.
 - NFS-e chega em XML no padrão ABRASF simplificado (descrição do serviço em texto livre, valor do item).
-- "Sistema de tarefas" e "sistema contábil" citados no catálogo são inteiramente mockados dentro do próprio portal — não há integração externa real em nenhum dos 4 módulos.
+- O "sistema contábil" citado no catálogo (que importaria o OFX do SC-01) é inteiramente mockado dentro do próprio portal — não há integração externa real em nenhum dos 3 módulos.
 - Papel `OPERADOR` do seed é vinculado a um único setor para demonstrar a segregação de visão; múltiplos setores por operador fica fora de escopo.
 
 ## 14. Fora de escopo
 
+- **SC-18 (Tarefas encadeadas por tipo de processo, RPA)** — cortado em 2026-08-30 por tempo. Consequência assumida: a natureza RPA não é coberta pela entrega. Desenho previsto preservado no §5.4 para referência.
 - SC-13 (download em lote no portal nacional) e demais processos do catálogo não selecionados.
 - Testes end-to-end automatizados.
 - Múltiplos ambientes (staging/produção) — apenas produção na Vercel.

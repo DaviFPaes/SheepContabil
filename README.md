@@ -93,7 +93,9 @@ Fronteira mockada: o `AvisoCertificado` guarda a mensagem, mas **não há envio 
 
 A fundação do portal está no ar (ver **Deploy**): autenticação própria (sessão em cookie httpOnly, JWT assinado), proteção de rotas por middleware, cabeçalho com identidade visual da SheepContabil, motor genérico de execução de módulos (`executarModulo`/`listarHistorico`, com histórico e tratamento de erro) e a home com o catálogo de módulos filtrado por papel e setor.
 
-Dos 4 módulos do catálogo, **SC-20** (Vencimento de certificado digital) está implementado e visível na home — ver **Módulos** acima. SC-01, SC-11 e SC-18 seguem com `implementado: false` e só aparecem na home quando forem entregues. Cada módulo é um plano de execução próprio; a flag correspondente só passa a `true` quando o módulo está pronto.
+A entrega é de **3 módulos**: SC-20 (Controle sistematizado), SC-01 e SC-11 (Agentes de IA). O SC-18 (RPA) foi cortado por tempo — a natureza RPA fica sem cobertura (ver a spec de design, §14). Ele continua listado no catálogo com `implementado: false` e nunca aparece na home.
+
+**SC-20** (Vencimento de certificado digital) está implementado e visível na home — ver **Módulos** acima. SC-01 e SC-11 seguem com `implementado: false`. Cada módulo é um plano de execução próprio; a flag correspondente só passa a `true` quando o módulo está pronto.
 
 ## Documentação de design
 
