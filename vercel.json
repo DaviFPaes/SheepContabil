@@ -7,6 +7,10 @@
     {
       "path": "/api/cron/sc-01",
       "schedule": "0 8 2 * *"
+    },
+    {
+      "path": "/api/cron/sc-11",
+      "schedule": "0 8 3 * *"
     }
   ]
 }
