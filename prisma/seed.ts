@@ -35,6 +35,18 @@ async function seedUsuarios() {
       setor: "Processos",
     },
   });
+
+  await prisma.usuario.upsert({
+    where: { email: "operador.saude@sheepcontabil.com.br" },
+    update: {},
+    create: {
+      email: "operador.saude@sheepcontabil.com.br",
+      nome: "Carla Nunes",
+      senhaHash: await hashSenha("OperadorSheep#2026"),
+      papel: "OPERADOR",
+      setor: "BPO Saúde",
+    },
+  });
 }
 
 const CLIENTES = [
@@ -190,9 +202,80 @@ async function seedDocumentosEntrada() {
   }
 }
 
+// SC-11 — termos iniciais da base de presunção (editáveis pelo admin em
+// /modulos/sc-11/termos). Upsert por `termo` (único) mantém o seed idempotente.
+const TERMOS_PRESUNCAO: { termo: string; aliquota: "P8" | "P32" }[] = [
+  { termo: "exame de imagem", aliquota: "P8" },
+  { termo: "raio-x", aliquota: "P8" },
+  { termo: "radiografia", aliquota: "P8" },
+  { termo: "tomografia", aliquota: "P8" },
+  { termo: "ressonância magnética", aliquota: "P8" },
+  { termo: "ultrassonografia", aliquota: "P8" },
+  { termo: "ecografia", aliquota: "P8" },
+  { termo: "densitometria óssea", aliquota: "P8" },
+  { termo: "mamografia", aliquota: "P8" },
+  { termo: "eletrocardiograma", aliquota: "P8" },
+  { termo: "endoscopia", aliquota: "P8" },
+  { termo: "colonoscopia", aliquota: "P8" },
+  { termo: "hemograma", aliquota: "P8" },
+  { termo: "análises clínicas", aliquota: "P8" },
+  { termo: "patologia clínica", aliquota: "P8" },
+  { termo: "hemodiálise", aliquota: "P8" },
+  { termo: "quimioterapia", aliquota: "P8" },
+  { termo: "radioterapia", aliquota: "P8" },
+  { termo: "fisioterapia", aliquota: "P8" },
+];
+
+async function seedTermosPresuncao() {
+  for (const t of TERMOS_PRESUNCAO) {
+    await prisma.termoPresuncao.upsert({
+      where: { termo: t.termo },
+      update: { aliquota: t.aliquota },
+      create: t,
+    });
+  }
+}
+
+async function seedNotasNfse() {
+  const cliente = await prisma.cliente.findFirstOrThrow({
+    where: { razaoSocial: { contains: "Vida Plena" } },
+  });
+  const arquivos = [
+    { nome: "nfse-pequena.xml", dia: 5 },
+    { nome: "nfse-media.xml", dia: 12 },
+    { nome: "nfse-grande.xml", dia: 20 },
+  ];
+  for (const a of arquivos) {
+    const existe = await prisma.documentoEntrada.findFirst({
+      where: { tipo: "NFSE", nomeArquivo: a.nome },
+    });
+    if (existe) continue;
+    let conteudo: Uint8Array<ArrayBuffer>;
+    try {
+      // Mesmo padrão do seedDocumentosEntrada (SC-01): resolve por process.cwd().
+      conteudo = readFileSync(join(process.cwd(), "prisma", "fixtures", a.nome));
+    } catch {
+      console.warn(`[seed] fixture ausente: ${a.nome} — rode 'npm run fixtures:nfse'`);
+      continue;
+    }
+    await prisma.documentoEntrada.create({
+      data: {
+        tipo: "NFSE",
+        clienteId: cliente.id,
+        nomeArquivo: a.nome,
+        mimeType: "application/xml",
+        arquivo: conteudo,
+        chegadaEm: new Date(Date.UTC(2026, 7, a.dia, 9, 0, 0)),
+      },
+    });
+  }
+}
+
 async function main() {
   await seedUsuarios();
   await seedClientes();
+  await seedTermosPresuncao();
+  await seedNotasNfse();
   await seedContasBancarias();
   await seedDocumentosEntrada();
   await seedCertificados();

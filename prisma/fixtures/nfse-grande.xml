@@ -1,0 +1,398 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<NFSe>
+  <InfNfse>
+    <Numero>2026-000103</Numero>
+    <DataEmissao>2026-08-20</DataEmissao>
+    <PrestadorServico><RazaoSocial>Clínica Vida Plena Diagnósticos</RazaoSocial></PrestadorServico>
+    <ListaItens>
+      <Item><Discriminacao>Tomografia computadorizada de crânio - sessão 1</Discriminacao><Valor>60.50</Valor></Item>
+      <Item><Discriminacao>Ressonância magnética de joelho</Discriminacao><Valor>97.50</Valor></Item>
+      <Item><Discriminacao>Ultrassonografia abdominal total</Discriminacao><Valor>134.50</Valor></Item>
+      <Item><Discriminacao>Radiografia de tórax PA e perfil</Discriminacao><Valor>171.50</Valor></Item>
+      <Item><Discriminacao>Mamografia bilateral</Discriminacao><Valor>208.50</Valor></Item>
+      <Item><Discriminacao>Densitometria óssea de coluna e fêmur - sessão 1</Discriminacao><Valor>245.50</Valor></Item>
+      <Item><Discriminacao>Endoscopia digestiva alta</Discriminacao><Valor>282.50</Valor></Item>
+      <Item><Discriminacao>Colonoscopia com biópsia</Discriminacao><Valor>319.50</Valor></Item>
+      <Item><Discriminacao>Hemograma completo</Discriminacao><Valor>356.50</Valor></Item>
+      <Item><Discriminacao>Dosagem de glicose e perfil lipídico</Discriminacao><Valor>393.50</Valor></Item>
+      <Item><Discriminacao>Eletrocardiograma de repouso - sessão 1</Discriminacao><Valor>430.50</Valor></Item>
+      <Item><Discriminacao>Sessão de quimioterapia</Discriminacao><Valor>467.50</Valor></Item>
+      <Item><Discriminacao>Sessão de radioterapia</Discriminacao><Valor>504.50</Valor></Item>
+      <Item><Discriminacao>Sessão de hemodiálise</Discriminacao><Valor>541.50</Valor></Item>
+      <Item><Discriminacao>Análises clínicas - painel tireoidiano</Discriminacao><Valor>578.50</Valor></Item>
+      <Item><Discriminacao>Consulta médica em consultório - sessão 1</Discriminacao><Valor>615.50</Valor></Item>
+      <Item><Discriminacao>Consulta de retorno com especialista</Discriminacao><Valor>652.50</Valor></Item>
+      <Item><Discriminacao>Perícia médica para seguradora</Discriminacao><Valor>689.50</Valor></Item>
+      <Item><Discriminacao>Elaboração de laudo médico avulso</Discriminacao><Valor>726.50</Valor></Item>
+      <Item><Discriminacao>Junta médica para avaliação de afastamento</Discriminacao><Valor>763.50</Valor></Item>
+      <Item><Discriminacao>Parecer técnico em prontuário - sessão 1</Discriminacao><Valor>800.50</Valor></Item>
+      <Item><Discriminacao>Tomografia computadorizada de crânio</Discriminacao><Valor>837.50</Valor></Item>
+      <Item><Discriminacao>Ressonância magnética de joelho</Discriminacao><Valor>874.50</Valor></Item>
+      <Item><Discriminacao>Ultrassonografia abdominal total</Discriminacao><Valor>911.50</Valor></Item>
+      <Item><Discriminacao>Radiografia de tórax PA e perfil</Discriminacao><Valor>948.50</Valor></Item>
+      <Item><Discriminacao>Mamografia bilateral - sessão 2</Discriminacao><Valor>85.50</Valor></Item>
+      <Item><Discriminacao>Densitometria óssea de coluna e fêmur</Discriminacao><Valor>122.50</Valor></Item>
+      <Item><Discriminacao>Endoscopia digestiva alta</Discriminacao><Valor>159.50</Valor></Item>
+      <Item><Discriminacao>Colonoscopia com biópsia</Discriminacao><Valor>196.50</Valor></Item>
+      <Item><Discriminacao>Hemograma completo</Discriminacao><Valor>233.50</Valor></Item>
+      <Item><Discriminacao>Dosagem de glicose e perfil lipídico - sessão 2</Discriminacao><Valor>270.50</Valor></Item>
+      <Item><Discriminacao>Eletrocardiograma de repouso</Discriminacao><Valor>307.50</Valor></Item>
+      <Item><Discriminacao>Sessão de quimioterapia</Discriminacao><Valor>344.50</Valor></Item>
+      <Item><Discriminacao>Sessão de radioterapia</Discriminacao><Valor>381.50</Valor></Item>
+      <Item><Discriminacao>Sessão de hemodiálise</Discriminacao><Valor>418.50</Valor></Item>
+      <Item><Discriminacao>Análises clínicas - painel tireoidiano - sessão 2</Discriminacao><Valor>455.50</Valor></Item>
+      <Item><Discriminacao>Consulta médica em consultório</Discriminacao><Valor>492.50</Valor></Item>
+      <Item><Discriminacao>Consulta de retorno com especialista</Discriminacao><Valor>529.50</Valor></Item>
+      <Item><Discriminacao>Perícia médica para seguradora</Discriminacao><Valor>566.50</Valor></Item>
+      <Item><Discriminacao>Elaboração de laudo médico avulso</Discriminacao><Valor>603.50</Valor></Item>
+      <Item><Discriminacao>Junta médica para avaliação de afastamento - sessão 2</Discriminacao><Valor>640.50</Valor></Item>
+      <Item><Discriminacao>Parecer técnico em prontuário</Discriminacao><Valor>677.50</Valor></Item>
+      <Item><Discriminacao>Tomografia computadorizada de crânio</Discriminacao><Valor>714.50</Valor></Item>
+      <Item><Discriminacao>Ressonância magnética de joelho</Discriminacao><Valor>751.50</Valor></Item>
+      <Item><Discriminacao>Ultrassonografia abdominal total</Discriminacao><Valor>788.50</Valor></Item>
+      <Item><Discriminacao>Radiografia de tórax PA e perfil - sessão 3</Discriminacao><Valor>825.50</Valor></Item>
+      <Item><Discriminacao>Mamografia bilateral</Discriminacao><Valor>862.50</Valor></Item>
+      <Item><Discriminacao>Densitometria óssea de coluna e fêmur</Discriminacao><Valor>899.50</Valor></Item>
+      <Item><Discriminacao>Endoscopia digestiva alta</Discriminacao><Valor>936.50</Valor></Item>
+      <Item><Discriminacao>Colonoscopia com biópsia</Discriminacao><Valor>73.50</Valor></Item>
+      <Item><Discriminacao>Hemograma completo - sessão 3</Discriminacao><Valor>110.50</Valor></Item>
+      <Item><Discriminacao>Dosagem de glicose e perfil lipídico</Discriminacao><Valor>147.50</Valor></Item>
+      <Item><Discriminacao>Eletrocardiograma de repouso</Discriminacao><Valor>184.50</Valor></Item>
+      <Item><Discriminacao>Sessão de quimioterapia</Discriminacao><Valor>221.50</Valor></Item>
+      <Item><Discriminacao>Sessão de radioterapia</Discriminacao><Valor>258.50</Valor></Item>
+      <Item><Discriminacao>Sessão de hemodiálise - sessão 3</Discriminacao><Valor>295.50</Valor></Item>
+      <Item><Discriminacao>Análises clínicas - painel tireoidiano</Discriminacao><Valor>332.50</Valor></Item>
+      <Item><Discriminacao>Consulta médica em consultório</Discriminacao><Valor>369.50</Valor></Item>
+      <Item><Discriminacao>Consulta de retorno com especialista</Discriminacao><Valor>406.50</Valor></Item>
+      <Item><Discriminacao>Perícia médica para seguradora</Discriminacao><Valor>443.50</Valor></Item>
+      <Item><Discriminacao>Elaboração de laudo médico avulso - sessão 3</Discriminacao><Valor>480.50</Valor></Item>
+      <Item><Discriminacao>Junta médica para avaliação de afastamento</Discriminacao><Valor>517.50</Valor></Item>
+      <Item><Discriminacao>Parecer técnico em prontuário</Discriminacao><Valor>554.50</Valor></Item>
+      <Item><Discriminacao>Tomografia computadorizada de crânio</Discriminacao><Valor>591.50</Valor></Item>
+      <Item><Discriminacao>Ressonância magnética de joelho</Discriminacao><Valor>628.50</Valor></Item>
+      <Item><Discriminacao>Ultrassonografia abdominal total - sessão 4</Discriminacao><Valor>665.50</Valor></Item>
+      <Item><Discriminacao>Radiografia de tórax PA e perfil</Discriminacao><Valor>702.50</Valor></Item>
+      <Item><Discriminacao>Mamografia bilateral</Discriminacao><Valor>739.50</Valor></Item>
+      <Item><Discriminacao>Densitometria óssea de coluna e fêmur</Discriminacao><Valor>776.50</Valor></Item>
+      <Item><Discriminacao>Endoscopia digestiva alta</Discriminacao><Valor>813.50</Valor></Item>
+      <Item><Discriminacao>Colonoscopia com biópsia - sessão 4</Discriminacao><Valor>850.50</Valor></Item>
+      <Item><Discriminacao>Hemograma completo</Discriminacao><Valor>887.50</Valor></Item>
+      <Item><Discriminacao>Dosagem de glicose e perfil lipídico</Discriminacao><Valor>924.50</Valor></Item>
+      <Item><Discriminacao>Eletrocardiograma de repouso</Discriminacao><Valor>61.50</Valor></Item>
+      <Item><Discriminacao>Sessão de quimioterapia</Discriminacao><Valor>98.50</Valor></Item>
+      <Item><Discriminacao>Sessão de radioterapia - sessão 4</Discriminacao><Valor>135.50</Valor></Item>
+      <Item><Discriminacao>Sessão de hemodiálise</Discriminacao><Valor>172.50</Valor></Item>
+      <Item><Discriminacao>Análises clínicas - painel tireoidiano</Discriminacao><Valor>209.50</Valor></Item>
+      <Item><Discriminacao>Consulta médica em consultório</Discriminacao><Valor>246.50</Valor></Item>
+      <Item><Discriminacao>Consulta de retorno com especialista</Discriminacao><Valor>283.50</Valor></Item>
+      <Item><Discriminacao>Perícia médica para seguradora - sessão 4</Discriminacao><Valor>320.50</Valor></Item>
+      <Item><Discriminacao>Elaboração de laudo médico avulso</Discriminacao><Valor>357.50</Valor></Item>
+      <Item><Discriminacao>Junta médica para avaliação de afastamento</Discriminacao><Valor>394.50</Valor></Item>
+      <Item><Discriminacao>Parecer técnico em prontuário</Discriminacao><Valor>431.50</Valor></Item>
+      <Item><Discriminacao>Tomografia computadorizada de crânio</Discriminacao><Valor>468.50</Valor></Item>
+      <Item><Discriminacao>Ressonância magnética de joelho - sessão 5</Discriminacao><Valor>505.50</Valor></Item>
+      <Item><Discriminacao>Ultrassonografia abdominal total</Discriminacao><Valor>542.50</Valor></Item>
+      <Item><Discriminacao>Radiografia de tórax PA e perfil</Discriminacao><Valor>579.50</Valor></Item>
+      <Item><Discriminacao>Mamografia bilateral</Discriminacao><Valor>616.50</Valor></Item>
+      <Item><Discriminacao>Densitometria óssea de coluna e fêmur</Discriminacao><Valor>653.50</Valor></Item>
+      <Item><Discriminacao>Endoscopia digestiva alta - sessão 5</Discriminacao><Valor>690.50</Valor></Item>
+      <Item><Discriminacao>Colonoscopia com biópsia</Discriminacao><Valor>727.50</Valor></Item>
+      <Item><Discriminacao>Hemograma completo</Discriminacao><Valor>764.50</Valor></Item>
+      <Item><Discriminacao>Dosagem de glicose e perfil lipídico</Discriminacao><Valor>801.50</Valor></Item>
+      <Item><Discriminacao>Eletrocardiograma de repouso</Discriminacao><Valor>838.50</Valor></Item>
+      <Item><Discriminacao>Sessão de quimioterapia - sessão 5</Discriminacao><Valor>875.50</Valor></Item>
+      <Item><Discriminacao>Sessão de radioterapia</Discriminacao><Valor>912.50</Valor></Item>
+      <Item><Discriminacao>Sessão de hemodiálise</Discriminacao><Valor>949.50</Valor></Item>
+      <Item><Discriminacao>Análises clínicas - painel tireoidiano</Discriminacao><Valor>86.50</Valor></Item>
+      <Item><Discriminacao>Consulta médica em consultório</Discriminacao><Valor>123.50</Valor></Item>
+      <Item><Discriminacao>Consulta de retorno com especialista - sessão 5</Discriminacao><Valor>160.50</Valor></Item>
+      <Item><Discriminacao>Perícia médica para seguradora</Discriminacao><Valor>197.50</Valor></Item>
+      <Item><Discriminacao>Elaboração de laudo médico avulso</Discriminacao><Valor>234.50</Valor></Item>
+      <Item><Discriminacao>Junta médica para avaliação de afastamento</Discriminacao><Valor>271.50</Valor></Item>
+      <Item><Discriminacao>Parecer técnico em prontuário</Discriminacao><Valor>308.50</Valor></Item>
+      <Item><Discriminacao>Tomografia computadorizada de crânio - sessão 6</Discriminacao><Valor>345.50</Valor></Item>
+      <Item><Discriminacao>Ressonância magnética de joelho</Discriminacao><Valor>382.50</Valor></Item>
+      <Item><Discriminacao>Ultrassonografia abdominal total</Discriminacao><Valor>419.50</Valor></Item>
+      <Item><Discriminacao>Radiografia de tórax PA e perfil</Discriminacao><Valor>456.50</Valor></Item>
+      <Item><Discriminacao>Mamografia bilateral</Discriminacao><Valor>493.50</Valor></Item>
+      <Item><Discriminacao>Densitometria óssea de coluna e fêmur - sessão 6</Discriminacao><Valor>530.50</Valor></Item>
+      <Item><Discriminacao>Endoscopia digestiva alta</Discriminacao><Valor>567.50</Valor></Item>
+      <Item><Discriminacao>Colonoscopia com biópsia</Discriminacao><Valor>604.50</Valor></Item>
+      <Item><Discriminacao>Hemograma completo</Discriminacao><Valor>641.50</Valor></Item>
+      <Item><Discriminacao>Dosagem de glicose e perfil lipídico</Discriminacao><Valor>678.50</Valor></Item>
+      <Item><Discriminacao>Eletrocardiograma de repouso - sessão 6</Discriminacao><Valor>715.50</Valor></Item>
+      <Item><Discriminacao>Sessão de quimioterapia</Discriminacao><Valor>752.50</Valor></Item>
+      <Item><Discriminacao>Sessão de radioterapia</Discriminacao><Valor>789.50</Valor></Item>
+      <Item><Discriminacao>Sessão de hemodiálise</Discriminacao><Valor>826.50</Valor></Item>
+      <Item><Discriminacao>Análises clínicas - painel tireoidiano</Discriminacao><Valor>863.50</Valor></Item>
+      <Item><Discriminacao>Consulta médica em consultório - sessão 6</Discriminacao><Valor>900.50</Valor></Item>
+      <Item><Discriminacao>Consulta de retorno com especialista</Discriminacao><Valor>937.50</Valor></Item>
+      <Item><Discriminacao>Perícia médica para seguradora</Discriminacao><Valor>74.50</Valor></Item>
+      <Item><Discriminacao>Elaboração de laudo médico avulso</Discriminacao><Valor>111.50</Valor></Item>
+      <Item><Discriminacao>Junta médica para avaliação de afastamento</Discriminacao><Valor>148.50</Valor></Item>
+      <Item><Discriminacao>Parecer técnico em prontuário - sessão 6</Discriminacao><Valor>185.50</Valor></Item>
+      <Item><Discriminacao>Tomografia computadorizada de crânio</Discriminacao><Valor>222.50</Valor></Item>
+      <Item><Discriminacao>Ressonância magnética de joelho</Discriminacao><Valor>259.50</Valor></Item>
+      <Item><Discriminacao>Ultrassonografia abdominal total</Discriminacao><Valor>296.50</Valor></Item>
+      <Item><Discriminacao>Radiografia de tórax PA e perfil</Discriminacao><Valor>333.50</Valor></Item>
+      <Item><Discriminacao>Mamografia bilateral - sessão 7</Discriminacao><Valor>370.50</Valor></Item>
+      <Item><Discriminacao>Densitometria óssea de coluna e fêmur</Discriminacao><Valor>407.50</Valor></Item>
+      <Item><Discriminacao>Endoscopia digestiva alta</Discriminacao><Valor>444.50</Valor></Item>
+      <Item><Discriminacao>Colonoscopia com biópsia</Discriminacao><Valor>481.50</Valor></Item>
+      <Item><Discriminacao>Hemograma completo</Discriminacao><Valor>518.50</Valor></Item>
+      <Item><Discriminacao>Dosagem de glicose e perfil lipídico - sessão 7</Discriminacao><Valor>555.50</Valor></Item>
+      <Item><Discriminacao>Eletrocardiograma de repouso</Discriminacao><Valor>592.50</Valor></Item>
+      <Item><Discriminacao>Sessão de quimioterapia</Discriminacao><Valor>629.50</Valor></Item>
+      <Item><Discriminacao>Sessão de radioterapia</Discriminacao><Valor>666.50</Valor></Item>
+      <Item><Discriminacao>Sessão de hemodiálise</Discriminacao><Valor>703.50</Valor></Item>
+      <Item><Discriminacao>Análises clínicas - painel tireoidiano - sessão 7</Discriminacao><Valor>740.50</Valor></Item>
+      <Item><Discriminacao>Consulta médica em consultório</Discriminacao><Valor>777.50</Valor></Item>
+      <Item><Discriminacao>Consulta de retorno com especialista</Discriminacao><Valor>814.50</Valor></Item>
+      <Item><Discriminacao>Perícia médica para seguradora</Discriminacao><Valor>851.50</Valor></Item>
+      <Item><Discriminacao>Elaboração de laudo médico avulso</Discriminacao><Valor>888.50</Valor></Item>
+      <Item><Discriminacao>Junta médica para avaliação de afastamento - sessão 7</Discriminacao><Valor>925.50</Valor></Item>
+      <Item><Discriminacao>Parecer técnico em prontuário</Discriminacao><Valor>62.50</Valor></Item>
+      <Item><Discriminacao>Tomografia computadorizada de crânio</Discriminacao><Valor>99.50</Valor></Item>
+      <Item><Discriminacao>Ressonância magnética de joelho</Discriminacao><Valor>136.50</Valor></Item>
+      <Item><Discriminacao>Ultrassonografia abdominal total</Discriminacao><Valor>173.50</Valor></Item>
+      <Item><Discriminacao>Radiografia de tórax PA e perfil - sessão 8</Discriminacao><Valor>210.50</Valor></Item>
+      <Item><Discriminacao>Mamografia bilateral</Discriminacao><Valor>247.50</Valor></Item>
+      <Item><Discriminacao>Densitometria óssea de coluna e fêmur</Discriminacao><Valor>284.50</Valor></Item>
+      <Item><Discriminacao>Endoscopia digestiva alta</Discriminacao><Valor>321.50</Valor></Item>
+      <Item><Discriminacao>Colonoscopia com biópsia</Discriminacao><Valor>358.50</Valor></Item>
+      <Item><Discriminacao>Hemograma completo - sessão 8</Discriminacao><Valor>395.50</Valor></Item>
+      <Item><Discriminacao>Dosagem de glicose e perfil lipídico</Discriminacao><Valor>432.50</Valor></Item>
+      <Item><Discriminacao>Eletrocardiograma de repouso</Discriminacao><Valor>469.50</Valor></Item>
+      <Item><Discriminacao>Sessão de quimioterapia</Discriminacao><Valor>506.50</Valor></Item>
+      <Item><Discriminacao>Sessão de radioterapia</Discriminacao><Valor>543.50</Valor></Item>
+      <Item><Discriminacao>Sessão de hemodiálise - sessão 8</Discriminacao><Valor>580.50</Valor></Item>
+      <Item><Discriminacao>Análises clínicas - painel tireoidiano</Discriminacao><Valor>617.50</Valor></Item>
+      <Item><Discriminacao>Consulta médica em consultório</Discriminacao><Valor>654.50</Valor></Item>
+      <Item><Discriminacao>Consulta de retorno com especialista</Discriminacao><Valor>691.50</Valor></Item>
+      <Item><Discriminacao>Perícia médica para seguradora</Discriminacao><Valor>728.50</Valor></Item>
+      <Item><Discriminacao>Elaboração de laudo médico avulso - sessão 8</Discriminacao><Valor>765.50</Valor></Item>
+      <Item><Discriminacao>Junta médica para avaliação de afastamento</Discriminacao><Valor>802.50</Valor></Item>
+      <Item><Discriminacao>Parecer técnico em prontuário</Discriminacao><Valor>839.50</Valor></Item>
+      <Item><Discriminacao>Tomografia computadorizada de crânio</Discriminacao><Valor>876.50</Valor></Item>
+      <Item><Discriminacao>Ressonância magnética de joelho</Discriminacao><Valor>913.50</Valor></Item>
+      <Item><Discriminacao>Ultrassonografia abdominal total - sessão 9</Discriminacao><Valor>950.50</Valor></Item>
+      <Item><Discriminacao>Radiografia de tórax PA e perfil</Discriminacao><Valor>87.50</Valor></Item>
+      <Item><Discriminacao>Mamografia bilateral</Discriminacao><Valor>124.50</Valor></Item>
+      <Item><Discriminacao>Densitometria óssea de coluna e fêmur</Discriminacao><Valor>161.50</Valor></Item>
+      <Item><Discriminacao>Endoscopia digestiva alta</Discriminacao><Valor>198.50</Valor></Item>
+      <Item><Discriminacao>Colonoscopia com biópsia - sessão 9</Discriminacao><Valor>235.50</Valor></Item>
+      <Item><Discriminacao>Hemograma completo</Discriminacao><Valor>272.50</Valor></Item>
+      <Item><Discriminacao>Dosagem de glicose e perfil lipídico</Discriminacao><Valor>309.50</Valor></Item>
+      <Item><Discriminacao>Eletrocardiograma de repouso</Discriminacao><Valor>346.50</Valor></Item>
+      <Item><Discriminacao>Sessão de quimioterapia</Discriminacao><Valor>383.50</Valor></Item>
+      <Item><Discriminacao>Sessão de radioterapia - sessão 9</Discriminacao><Valor>420.50</Valor></Item>
+      <Item><Discriminacao>Sessão de hemodiálise</Discriminacao><Valor>457.50</Valor></Item>
+      <Item><Discriminacao>Análises clínicas - painel tireoidiano</Discriminacao><Valor>494.50</Valor></Item>
+      <Item><Discriminacao>Consulta médica em consultório</Discriminacao><Valor>531.50</Valor></Item>
+      <Item><Discriminacao>Consulta de retorno com especialista</Discriminacao><Valor>568.50</Valor></Item>
+      <Item><Discriminacao>Perícia médica para seguradora - sessão 9</Discriminacao><Valor>605.50</Valor></Item>
+      <Item><Discriminacao>Elaboração de laudo médico avulso</Discriminacao><Valor>642.50</Valor></Item>
+      <Item><Discriminacao>Junta médica para avaliação de afastamento</Discriminacao><Valor>679.50</Valor></Item>
+      <Item><Discriminacao>Parecer técnico em prontuário</Discriminacao><Valor>716.50</Valor></Item>
+      <Item><Discriminacao>Tomografia computadorizada de crânio</Discriminacao><Valor>753.50</Valor></Item>
+      <Item><Discriminacao>Ressonância magnética de joelho - sessão 10</Discriminacao><Valor>790.50</Valor></Item>
+      <Item><Discriminacao>Ultrassonografia abdominal total</Discriminacao><Valor>827.50</Valor></Item>
+      <Item><Discriminacao>Radiografia de tórax PA e perfil</Discriminacao><Valor>864.50</Valor></Item>
+      <Item><Discriminacao>Mamografia bilateral</Discriminacao><Valor>901.50</Valor></Item>
+      <Item><Discriminacao>Densitometria óssea de coluna e fêmur</Discriminacao><Valor>938.50</Valor></Item>
+      <Item><Discriminacao>Endoscopia digestiva alta - sessão 10</Discriminacao><Valor>75.50</Valor></Item>
+      <Item><Discriminacao>Colonoscopia com biópsia</Discriminacao><Valor>112.50</Valor></Item>
+      <Item><Discriminacao>Hemograma completo</Discriminacao><Valor>149.50</Valor></Item>
+      <Item><Discriminacao>Dosagem de glicose e perfil lipídico</Discriminacao><Valor>186.50</Valor></Item>
+      <Item><Discriminacao>Eletrocardiograma de repouso</Discriminacao><Valor>223.50</Valor></Item>
+      <Item><Discriminacao>Sessão de quimioterapia - sessão 10</Discriminacao><Valor>260.50</Valor></Item>
+      <Item><Discriminacao>Sessão de radioterapia</Discriminacao><Valor>297.50</Valor></Item>
+      <Item><Discriminacao>Sessão de hemodiálise</Discriminacao><Valor>334.50</Valor></Item>
+      <Item><Discriminacao>Análises clínicas - painel tireoidiano</Discriminacao><Valor>371.50</Valor></Item>
+      <Item><Discriminacao>Consulta médica em consultório</Discriminacao><Valor>408.50</Valor></Item>
+      <Item><Discriminacao>Consulta de retorno com especialista - sessão 10</Discriminacao><Valor>445.50</Valor></Item>
+      <Item><Discriminacao>Perícia médica para seguradora</Discriminacao><Valor>482.50</Valor></Item>
+      <Item><Discriminacao>Elaboração de laudo médico avulso</Discriminacao><Valor>519.50</Valor></Item>
+      <Item><Discriminacao>Junta médica para avaliação de afastamento</Discriminacao><Valor>556.50</Valor></Item>
+      <Item><Discriminacao>Parecer técnico em prontuário</Discriminacao><Valor>593.50</Valor></Item>
+      <Item><Discriminacao>Tomografia computadorizada de crânio - sessão 11</Discriminacao><Valor>630.50</Valor></Item>
+      <Item><Discriminacao>Ressonância magnética de joelho</Discriminacao><Valor>667.50</Valor></Item>
+      <Item><Discriminacao>Ultrassonografia abdominal total</Discriminacao><Valor>704.50</Valor></Item>
+      <Item><Discriminacao>Radiografia de tórax PA e perfil</Discriminacao><Valor>741.50</Valor></Item>
+      <Item><Discriminacao>Mamografia bilateral</Discriminacao><Valor>778.50</Valor></Item>
+      <Item><Discriminacao>Densitometria óssea de coluna e fêmur - sessão 11</Discriminacao><Valor>815.50</Valor></Item>
+      <Item><Discriminacao>Endoscopia digestiva alta</Discriminacao><Valor>852.50</Valor></Item>
+      <Item><Discriminacao>Colonoscopia com biópsia</Discriminacao><Valor>889.50</Valor></Item>
+      <Item><Discriminacao>Hemograma completo</Discriminacao><Valor>926.50</Valor></Item>
+      <Item><Discriminacao>Dosagem de glicose e perfil lipídico</Discriminacao><Valor>63.50</Valor></Item>
+      <Item><Discriminacao>Eletrocardiograma de repouso - sessão 11</Discriminacao><Valor>100.50</Valor></Item>
+      <Item><Discriminacao>Sessão de quimioterapia</Discriminacao><Valor>137.50</Valor></Item>
+      <Item><Discriminacao>Sessão de radioterapia</Discriminacao><Valor>174.50</Valor></Item>
+      <Item><Discriminacao>Sessão de hemodiálise</Discriminacao><Valor>211.50</Valor></Item>
+      <Item><Discriminacao>Análises clínicas - painel tireoidiano</Discriminacao><Valor>248.50</Valor></Item>
+      <Item><Discriminacao>Consulta médica em consultório - sessão 11</Discriminacao><Valor>285.50</Valor></Item>
+      <Item><Discriminacao>Consulta de retorno com especialista</Discriminacao><Valor>322.50</Valor></Item>
+      <Item><Discriminacao>Perícia médica para seguradora</Discriminacao><Valor>359.50</Valor></Item>
+      <Item><Discriminacao>Elaboração de laudo médico avulso</Discriminacao><Valor>396.50</Valor></Item>
+      <Item><Discriminacao>Junta médica para avaliação de afastamento</Discriminacao><Valor>433.50</Valor></Item>
+      <Item><Discriminacao>Parecer técnico em prontuário - sessão 11</Discriminacao><Valor>470.50</Valor></Item>
+      <Item><Discriminacao>Tomografia computadorizada de crânio</Discriminacao><Valor>507.50</Valor></Item>
+      <Item><Discriminacao>Ressonância magnética de joelho</Discriminacao><Valor>544.50</Valor></Item>
+      <Item><Discriminacao>Ultrassonografia abdominal total</Discriminacao><Valor>581.50</Valor></Item>
+      <Item><Discriminacao>Radiografia de tórax PA e perfil</Discriminacao><Valor>618.50</Valor></Item>
+      <Item><Discriminacao>Mamografia bilateral - sessão 12</Discriminacao><Valor>655.50</Valor></Item>
+      <Item><Discriminacao>Densitometria óssea de coluna e fêmur</Discriminacao><Valor>692.50</Valor></Item>
+      <Item><Discriminacao>Endoscopia digestiva alta</Discriminacao><Valor>729.50</Valor></Item>
+      <Item><Discriminacao>Colonoscopia com biópsia</Discriminacao><Valor>766.50</Valor></Item>
+      <Item><Discriminacao>Hemograma completo</Discriminacao><Valor>803.50</Valor></Item>
+      <Item><Discriminacao>Dosagem de glicose e perfil lipídico - sessão 12</Discriminacao><Valor>840.50</Valor></Item>
+      <Item><Discriminacao>Eletrocardiograma de repouso</Discriminacao><Valor>877.50</Valor></Item>
+      <Item><Discriminacao>Sessão de quimioterapia</Discriminacao><Valor>914.50</Valor></Item>
+      <Item><Discriminacao>Sessão de radioterapia</Discriminacao><Valor>951.50</Valor></Item>
+      <Item><Discriminacao>Sessão de hemodiálise</Discriminacao><Valor>88.50</Valor></Item>
+      <Item><Discriminacao>Análises clínicas - painel tireoidiano - sessão 12</Discriminacao><Valor>125.50</Valor></Item>
+      <Item><Discriminacao>Consulta médica em consultório</Discriminacao><Valor>162.50</Valor></Item>
+      <Item><Discriminacao>Consulta de retorno com especialista</Discriminacao><Valor>199.50</Valor></Item>
+      <Item><Discriminacao>Perícia médica para seguradora</Discriminacao><Valor>236.50</Valor></Item>
+      <Item><Discriminacao>Elaboração de laudo médico avulso</Discriminacao><Valor>273.50</Valor></Item>
+      <Item><Discriminacao>Junta médica para avaliação de afastamento - sessão 12</Discriminacao><Valor>310.50</Valor></Item>
+      <Item><Discriminacao>Parecer técnico em prontuário</Discriminacao><Valor>347.50</Valor></Item>
+      <Item><Discriminacao>Tomografia computadorizada de crânio</Discriminacao><Valor>384.50</Valor></Item>
+      <Item><Discriminacao>Ressonância magnética de joelho</Discriminacao><Valor>421.50</Valor></Item>
+      <Item><Discriminacao>Ultrassonografia abdominal total</Discriminacao><Valor>458.50</Valor></Item>
+      <Item><Discriminacao>Radiografia de tórax PA e perfil - sessão 13</Discriminacao><Valor>495.50</Valor></Item>
+      <Item><Discriminacao>Mamografia bilateral</Discriminacao><Valor>532.50</Valor></Item>
+      <Item><Discriminacao>Densitometria óssea de coluna e fêmur</Discriminacao><Valor>569.50</Valor></Item>
+      <Item><Discriminacao>Endoscopia digestiva alta</Discriminacao><Valor>606.50</Valor></Item>
+      <Item><Discriminacao>Colonoscopia com biópsia</Discriminacao><Valor>643.50</Valor></Item>
+      <Item><Discriminacao>Hemograma completo - sessão 13</Discriminacao><Valor>680.50</Valor></Item>
+      <Item><Discriminacao>Dosagem de glicose e perfil lipídico</Discriminacao><Valor>717.50</Valor></Item>
+      <Item><Discriminacao>Eletrocardiograma de repouso</Discriminacao><Valor>754.50</Valor></Item>
+      <Item><Discriminacao>Sessão de quimioterapia</Discriminacao><Valor>791.50</Valor></Item>
+      <Item><Discriminacao>Sessão de radioterapia</Discriminacao><Valor>828.50</Valor></Item>
+      <Item><Discriminacao>Sessão de hemodiálise - sessão 13</Discriminacao><Valor>865.50</Valor></Item>
+      <Item><Discriminacao>Análises clínicas - painel tireoidiano</Discriminacao><Valor>902.50</Valor></Item>
+      <Item><Discriminacao>Consulta médica em consultório</Discriminacao><Valor>939.50</Valor></Item>
+      <Item><Discriminacao>Consulta de retorno com especialista</Discriminacao><Valor>76.50</Valor></Item>
+      <Item><Discriminacao>Perícia médica para seguradora</Discriminacao><Valor>113.50</Valor></Item>
+      <Item><Discriminacao>Elaboração de laudo médico avulso - sessão 13</Discriminacao><Valor>150.50</Valor></Item>
+      <Item><Discriminacao>Junta médica para avaliação de afastamento</Discriminacao><Valor>187.50</Valor></Item>
+      <Item><Discriminacao>Parecer técnico em prontuário</Discriminacao><Valor>224.50</Valor></Item>
+      <Item><Discriminacao>Tomografia computadorizada de crânio</Discriminacao><Valor>261.50</Valor></Item>
+      <Item><Discriminacao>Ressonância magnética de joelho</Discriminacao><Valor>298.50</Valor></Item>
+      <Item><Discriminacao>Ultrassonografia abdominal total - sessão 14</Discriminacao><Valor>335.50</Valor></Item>
+      <Item><Discriminacao>Radiografia de tórax PA e perfil</Discriminacao><Valor>372.50</Valor></Item>
+      <Item><Discriminacao>Mamografia bilateral</Discriminacao><Valor>409.50</Valor></Item>
+      <Item><Discriminacao>Densitometria óssea de coluna e fêmur</Discriminacao><Valor>446.50</Valor></Item>
+      <Item><Discriminacao>Endoscopia digestiva alta</Discriminacao><Valor>483.50</Valor></Item>
+      <Item><Discriminacao>Colonoscopia com biópsia - sessão 14</Discriminacao><Valor>520.50</Valor></Item>
+      <Item><Discriminacao>Hemograma completo</Discriminacao><Valor>557.50</Valor></Item>
+      <Item><Discriminacao>Dosagem de glicose e perfil lipídico</Discriminacao><Valor>594.50</Valor></Item>
+      <Item><Discriminacao>Eletrocardiograma de repouso</Discriminacao><Valor>631.50</Valor></Item>
+      <Item><Discriminacao>Sessão de quimioterapia</Discriminacao><Valor>668.50</Valor></Item>
+      <Item><Discriminacao>Sessão de radioterapia - sessão 14</Discriminacao><Valor>705.50</Valor></Item>
+      <Item><Discriminacao>Sessão de hemodiálise</Discriminacao><Valor>742.50</Valor></Item>
+      <Item><Discriminacao>Análises clínicas - painel tireoidiano</Discriminacao><Valor>779.50</Valor></Item>
+      <Item><Discriminacao>Consulta médica em consultório</Discriminacao><Valor>816.50</Valor></Item>
+      <Item><Discriminacao>Consulta de retorno com especialista</Discriminacao><Valor>853.50</Valor></Item>
+      <Item><Discriminacao>Perícia médica para seguradora - sessão 14</Discriminacao><Valor>890.50</Valor></Item>
+      <Item><Discriminacao>Elaboração de laudo médico avulso</Discriminacao><Valor>927.50</Valor></Item>
+      <Item><Discriminacao>Junta médica para avaliação de afastamento</Discriminacao><Valor>64.50</Valor></Item>
+      <Item><Discriminacao>Parecer técnico em prontuário</Discriminacao><Valor>101.50</Valor></Item>
+      <Item><Discriminacao>Tomografia computadorizada de crânio</Discriminacao><Valor>138.50</Valor></Item>
+      <Item><Discriminacao>Ressonância magnética de joelho - sessão 15</Discriminacao><Valor>175.50</Valor></Item>
+      <Item><Discriminacao>Ultrassonografia abdominal total</Discriminacao><Valor>212.50</Valor></Item>
+      <Item><Discriminacao>Radiografia de tórax PA e perfil</Discriminacao><Valor>249.50</Valor></Item>
+      <Item><Discriminacao>Mamografia bilateral</Discriminacao><Valor>286.50</Valor></Item>
+      <Item><Discriminacao>Densitometria óssea de coluna e fêmur</Discriminacao><Valor>323.50</Valor></Item>
+      <Item><Discriminacao>Endoscopia digestiva alta - sessão 15</Discriminacao><Valor>360.50</Valor></Item>
+      <Item><Discriminacao>Colonoscopia com biópsia</Discriminacao><Valor>397.50</Valor></Item>
+      <Item><Discriminacao>Hemograma completo</Discriminacao><Valor>434.50</Valor></Item>
+      <Item><Discriminacao>Dosagem de glicose e perfil lipídico</Discriminacao><Valor>471.50</Valor></Item>
+      <Item><Discriminacao>Eletrocardiograma de repouso</Discriminacao><Valor>508.50</Valor></Item>
+      <Item><Discriminacao>Sessão de quimioterapia - sessão 15</Discriminacao><Valor>545.50</Valor></Item>
+      <Item><Discriminacao>Sessão de radioterapia</Discriminacao><Valor>582.50</Valor></Item>
+      <Item><Discriminacao>Sessão de hemodiálise</Discriminacao><Valor>619.50</Valor></Item>
+      <Item><Discriminacao>Análises clínicas - painel tireoidiano</Discriminacao><Valor>656.50</Valor></Item>
+      <Item><Discriminacao>Consulta médica em consultório</Discriminacao><Valor>693.50</Valor></Item>
+      <Item><Discriminacao>Consulta de retorno com especialista - sessão 15</Discriminacao><Valor>730.50</Valor></Item>
+      <Item><Discriminacao>Perícia médica para seguradora</Discriminacao><Valor>767.50</Valor></Item>
+      <Item><Discriminacao>Elaboração de laudo médico avulso</Discriminacao><Valor>804.50</Valor></Item>
+      <Item><Discriminacao>Junta médica para avaliação de afastamento</Discriminacao><Valor>841.50</Valor></Item>
+      <Item><Discriminacao>Parecer técnico em prontuário</Discriminacao><Valor>878.50</Valor></Item>
+      <Item><Discriminacao>Tomografia computadorizada de crânio - sessão 16</Discriminacao><Valor>915.50</Valor></Item>
+      <Item><Discriminacao>Ressonância magnética de joelho</Discriminacao><Valor>952.50</Valor></Item>
+      <Item><Discriminacao>Ultrassonografia abdominal total</Discriminacao><Valor>89.50</Valor></Item>
+      <Item><Discriminacao>Radiografia de tórax PA e perfil</Discriminacao><Valor>126.50</Valor></Item>
+      <Item><Discriminacao>Mamografia bilateral</Discriminacao><Valor>163.50</Valor></Item>
+      <Item><Discriminacao>Densitometria óssea de coluna e fêmur - sessão 16</Discriminacao><Valor>200.50</Valor></Item>
+      <Item><Discriminacao>Endoscopia digestiva alta</Discriminacao><Valor>237.50</Valor></Item>
+      <Item><Discriminacao>Colonoscopia com biópsia</Discriminacao><Valor>274.50</Valor></Item>
+      <Item><Discriminacao>Hemograma completo</Discriminacao><Valor>311.50</Valor></Item>
+      <Item><Discriminacao>Dosagem de glicose e perfil lipídico</Discriminacao><Valor>348.50</Valor></Item>
+      <Item><Discriminacao>Eletrocardiograma de repouso - sessão 16</Discriminacao><Valor>385.50</Valor></Item>
+      <Item><Discriminacao>Sessão de quimioterapia</Discriminacao><Valor>422.50</Valor></Item>
+      <Item><Discriminacao>Sessão de radioterapia</Discriminacao><Valor>459.50</Valor></Item>
+      <Item><Discriminacao>Sessão de hemodiálise</Discriminacao><Valor>496.50</Valor></Item>
+      <Item><Discriminacao>Análises clínicas - painel tireoidiano</Discriminacao><Valor>533.50</Valor></Item>
+      <Item><Discriminacao>Consulta médica em consultório - sessão 16</Discriminacao><Valor>570.50</Valor></Item>
+      <Item><Discriminacao>Consulta de retorno com especialista</Discriminacao><Valor>607.50</Valor></Item>
+      <Item><Discriminacao>Perícia médica para seguradora</Discriminacao><Valor>644.50</Valor></Item>
+      <Item><Discriminacao>Elaboração de laudo médico avulso</Discriminacao><Valor>681.50</Valor></Item>
+      <Item><Discriminacao>Junta médica para avaliação de afastamento</Discriminacao><Valor>718.50</Valor></Item>
+      <Item><Discriminacao>Parecer técnico em prontuário - sessão 16</Discriminacao><Valor>755.50</Valor></Item>
+      <Item><Discriminacao>Tomografia computadorizada de crânio</Discriminacao><Valor>792.50</Valor></Item>
+      <Item><Discriminacao>Ressonância magnética de joelho</Discriminacao><Valor>829.50</Valor></Item>
+      <Item><Discriminacao>Ultrassonografia abdominal total</Discriminacao><Valor>866.50</Valor></Item>
+      <Item><Discriminacao>Radiografia de tórax PA e perfil</Discriminacao><Valor>903.50</Valor></Item>
+      <Item><Discriminacao>Mamografia bilateral - sessão 17</Discriminacao><Valor>940.50</Valor></Item>
+      <Item><Discriminacao>Densitometria óssea de coluna e fêmur</Discriminacao><Valor>77.50</Valor></Item>
+      <Item><Discriminacao>Endoscopia digestiva alta</Discriminacao><Valor>114.50</Valor></Item>
+      <Item><Discriminacao>Colonoscopia com biópsia</Discriminacao><Valor>151.50</Valor></Item>
+      <Item><Discriminacao>Hemograma completo</Discriminacao><Valor>188.50</Valor></Item>
+      <Item><Discriminacao>Dosagem de glicose e perfil lipídico - sessão 17</Discriminacao><Valor>225.50</Valor></Item>
+      <Item><Discriminacao>Eletrocardiograma de repouso</Discriminacao><Valor>262.50</Valor></Item>
+      <Item><Discriminacao>Sessão de quimioterapia</Discriminacao><Valor>299.50</Valor></Item>
+      <Item><Discriminacao>Sessão de radioterapia</Discriminacao><Valor>336.50</Valor></Item>
+      <Item><Discriminacao>Sessão de hemodiálise</Discriminacao><Valor>373.50</Valor></Item>
+      <Item><Discriminacao>Análises clínicas - painel tireoidiano - sessão 17</Discriminacao><Valor>410.50</Valor></Item>
+      <Item><Discriminacao>Consulta médica em consultório</Discriminacao><Valor>447.50</Valor></Item>
+      <Item><Discriminacao>Consulta de retorno com especialista</Discriminacao><Valor>484.50</Valor></Item>
+      <Item><Discriminacao>Perícia médica para seguradora</Discriminacao><Valor>521.50</Valor></Item>
+      <Item><Discriminacao>Elaboração de laudo médico avulso</Discriminacao><Valor>558.50</Valor></Item>
+      <Item><Discriminacao>Junta médica para avaliação de afastamento - sessão 17</Discriminacao><Valor>595.50</Valor></Item>
+      <Item><Discriminacao>Parecer técnico em prontuário</Discriminacao><Valor>632.50</Valor></Item>
+      <Item><Discriminacao>Tomografia computadorizada de crânio</Discriminacao><Valor>669.50</Valor></Item>
+      <Item><Discriminacao>Ressonância magnética de joelho</Discriminacao><Valor>706.50</Valor></Item>
+      <Item><Discriminacao>Ultrassonografia abdominal total</Discriminacao><Valor>743.50</Valor></Item>
+      <Item><Discriminacao>Radiografia de tórax PA e perfil - sessão 18</Discriminacao><Valor>780.50</Valor></Item>
+      <Item><Discriminacao>Mamografia bilateral</Discriminacao><Valor>817.50</Valor></Item>
+      <Item><Discriminacao>Densitometria óssea de coluna e fêmur</Discriminacao><Valor>854.50</Valor></Item>
+      <Item><Discriminacao>Endoscopia digestiva alta</Discriminacao><Valor>891.50</Valor></Item>
+      <Item><Discriminacao>Colonoscopia com biópsia</Discriminacao><Valor>928.50</Valor></Item>
+      <Item><Discriminacao>Hemograma completo - sessão 18</Discriminacao><Valor>65.50</Valor></Item>
+      <Item><Discriminacao>Dosagem de glicose e perfil lipídico</Discriminacao><Valor>102.50</Valor></Item>
+      <Item><Discriminacao>Eletrocardiograma de repouso</Discriminacao><Valor>139.50</Valor></Item>
+      <Item><Discriminacao>Sessão de quimioterapia</Discriminacao><Valor>176.50</Valor></Item>
+      <Item><Discriminacao>Sessão de radioterapia</Discriminacao><Valor>213.50</Valor></Item>
+      <Item><Discriminacao>Sessão de hemodiálise - sessão 18</Discriminacao><Valor>250.50</Valor></Item>
+      <Item><Discriminacao>Análises clínicas - painel tireoidiano</Discriminacao><Valor>287.50</Valor></Item>
+      <Item><Discriminacao>Consulta médica em consultório</Discriminacao><Valor>324.50</Valor></Item>
+      <Item><Discriminacao>Consulta de retorno com especialista</Discriminacao><Valor>361.50</Valor></Item>
+      <Item><Discriminacao>Perícia médica para seguradora</Discriminacao><Valor>398.50</Valor></Item>
+      <Item><Discriminacao>Elaboração de laudo médico avulso - sessão 18</Discriminacao><Valor>435.50</Valor></Item>
+      <Item><Discriminacao>Junta médica para avaliação de afastamento</Discriminacao><Valor>472.50</Valor></Item>
+      <Item><Discriminacao>Parecer técnico em prontuário</Discriminacao><Valor>509.50</Valor></Item>
+      <Item><Discriminacao>Tomografia computadorizada de crânio</Discriminacao><Valor>546.50</Valor></Item>
+      <Item><Discriminacao>Ressonância magnética de joelho</Discriminacao><Valor>583.50</Valor></Item>
+      <Item><Discriminacao>Ultrassonografia abdominal total - sessão 19</Discriminacao><Valor>620.50</Valor></Item>
+      <Item><Discriminacao>Radiografia de tórax PA e perfil</Discriminacao><Valor>657.50</Valor></Item>
+      <Item><Discriminacao>Mamografia bilateral</Discriminacao><Valor>694.50</Valor></Item>
+      <Item><Discriminacao>Densitometria óssea de coluna e fêmur</Discriminacao><Valor>731.50</Valor></Item>
+      <Item><Discriminacao>Endoscopia digestiva alta</Discriminacao><Valor>768.50</Valor></Item>
+      <Item><Discriminacao>Colonoscopia com biópsia - sessão 19</Discriminacao><Valor>805.50</Valor></Item>
+      <Item><Discriminacao>Hemograma completo</Discriminacao><Valor>842.50</Valor></Item>
+    </ListaItens>
+    <ValorTotal>194980.50</ValorTotal>
+  </InfNfse>
+</NFSe>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<NFSe>
+  <InfNfse>
+    <Numero>2026-000101</Numero>
+    <DataEmissao>2026-08-05</DataEmissao>
+    <PrestadorServico><RazaoSocial>Clínica Vida Plena Diagnósticos</RazaoSocial></PrestadorServico>
+    <ListaItens>
+      <Item><Discriminacao>Tomografia computadorizada de crânio</Discriminacao><Valor>480.00</Valor></Item>
+      <Item><Discriminacao>Radiografia de tórax PA e perfil</Discriminacao><Valor>120.00</Valor></Item>
+      <Item><Discriminacao>Consulta médica em consultório</Discriminacao><Valor>200.00</Valor></Item>
+      <Item><Discriminacao>Hemograma completo</Discriminacao><Valor>45.00</Valor></Item>
+      <Item><Discriminacao>Perícia médica para seguradora</Discriminacao><Valor>350.00</Valor></Item>
+      <Item><Discriminacao>Densitometria óssea de coluna e fêmur</Discriminacao><Valor>190.00</Valor></Item>
+    </ListaItens>
+    <ValorTotal>1385.00</ValorTotal>
+  </InfNfse>
+</NFSe>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<NFSe>
+  <InfNfse>
+    <Numero>2026-000102</Numero>
+    <DataEmissao>2026-08-12</DataEmissao>
+    <PrestadorServico><RazaoSocial>Clínica Vida Plena Diagnósticos</RazaoSocial></PrestadorServico>
+    <ListaItens>
+      <Item><Discriminacao>Tomografia computadorizada de crânio</Discriminacao><Valor>171.50</Valor></Item>
+      <Item><Discriminacao>Ressonância magnética de joelho</Discriminacao><Valor>208.50</Valor></Item>
+      <Item><Discriminacao>Ultrassonografia abdominal total</Discriminacao><Valor>245.50</Valor></Item>
+      <Item><Discriminacao>Radiografia de tórax PA e perfil</Discriminacao><Valor>282.50</Valor></Item>
+      <Item><Discriminacao>Mamografia bilateral</Discriminacao><Valor>319.50</Valor></Item>
+      <Item><Discriminacao>Densitometria óssea de coluna e fêmur</Discriminacao><Valor>356.50</Valor></Item>
+      <Item><Discriminacao>Endoscopia digestiva alta</Discriminacao><Valor>393.50</Valor></Item>
+      <Item><Discriminacao>Colonoscopia com biópsia</Discriminacao><Valor>430.50</Valor></Item>
+      <Item><Discriminacao>Hemograma completo</Discriminacao><Valor>467.50</Valor></Item>
+      <Item><Discriminacao>Dosagem de glicose e perfil lipídico</Discriminacao><Valor>504.50</Valor></Item>
+      <Item><Discriminacao>Consulta médica em consultório</Discriminacao><Valor>541.50</Valor></Item>
+      <Item><Discriminacao>Consulta de retorno com especialista</Discriminacao><Valor>578.50</Valor></Item>
+      <Item><Discriminacao>Perícia médica para seguradora</Discriminacao><Valor>615.50</Valor></Item>
+      <Item><Discriminacao>Elaboração de laudo médico avulso</Discriminacao><Valor>652.50</Valor></Item>
+      <Item><Discriminacao>Junta médica para avaliação de afastamento</Discriminacao><Valor>689.50</Valor></Item>
+      <Item><Discriminacao>Parecer técnico em prontuário</Discriminacao><Valor>726.50</Valor></Item>
+      <Item><Discriminacao>Procedimento ambulatorial não especificado</Discriminacao><Valor>763.50</Valor></Item>
+      <Item><Discriminacao>Atendimento de urgência - avaliação inicial</Discriminacao><Valor>800.50</Valor></Item>
+      <Item><Discriminacao>Aplicação de medicação intravenosa</Discriminacao><Valor>837.50</Valor></Item>
+      <Item><Discriminacao>Curativo especial com desbridamento</Discriminacao><Valor>874.50</Valor></Item>
+    </ListaItens>
+    <ValorTotal>10460.00</ValorTotal>
+  </InfNfse>
+</NFSe>

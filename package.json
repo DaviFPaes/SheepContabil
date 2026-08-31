@@ -10,6 +10,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "fixtures": "tsx prisma/fixtures/gerar-fixtures.ts",
+    "fixtures:nfse": "tsx prisma/fixtures/gerar-fixtures-nfse.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {

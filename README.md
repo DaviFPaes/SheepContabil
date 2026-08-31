@@ -89,6 +89,27 @@ Fronteira mockada: o "sistema contábil" que importaria o OFX não existe — a 
 
 Fixtures de demonstração em `prisma/fixtures/` (3 PDFs com leiautes diferentes + 1 foto em JPEG) são gerados por `npm run fixtures` e carregados pelo seed.
 
+### SC-11 — Presunção correta nas notas de serviço da área médica
+
+Caixa de entrada de NFS-e (`DocumentoEntrada`, `tipo NFSE`, a mesma do SC-01). O operador sobe o **XML** de uma NFS-e médica para um cliente; o botão **Processar pendentes** (ou o cron mensal `/api/cron/sc-11`, dia 3 às 08:00 UTC) parseia os itens e classifica cada um numa base de presunção do lucro presumido:
+
+- **8%** — serviços hospitalares e equiparados (exames, imagem, análises clínicas, terapias, procedimentos).
+- **32%** — regra geral dos demais (consulta, perícia, laudo avulso).
+
+Cada item passa primeiro pela **lista de termos** (editável pelo admin em `/modulos/sc-11/termos`). O que não bate em termo nenhum vai para o **`claude-opus-5`** (tool use), em lotes de 40 itens — aguenta uma nota de centenas de itens. Itens que a IA classifica com **confiança `< 0.85`** entram numa **fila de conferência** e precisam ser confirmados (ou reclassificados) manualmente. **O download do relatório só libera quando não há mais item em conferência.**
+
+Cada `ItemNota` guarda **por que** recebeu aquela base (`origem`: `REGRA` / `IA` / `MANUAL`, e a `justificativa`) — como snapshot. Reclassificar um termo depois **não** mexe em nota já processada; a tela de termos tem um **histórico de auditoria** de toda criação/reclassificação/remoção (quem, quando, de qual base para qual).
+
+Processamento é **granular por nota**: uma NFS-e ilegível vira só ela `ERRO`; as outras do lote seguem.
+
+**Precisa de `ANTHROPIC_API_KEY`.** Sem ela, uma nota com itens sem termo vira `ERRO` "IA indisponível" — o resto do portal continua. Notas cujos itens todos batem em termo processam mesmo sem chave.
+
+Visível para o `ADMIN` e para operadores do setor **BPO Saúde**. A tela de termos é só do `ADMIN`.
+
+Fronteira mockada: não existe "lançar no sistema fiscal" — a entrega é o **CSV consolidado** (`descricao;valor;aliquota;origem;justificativa` + base de presunção por balde) e o consolidado auditável na tela.
+
+Fixtures de demonstração em `prisma/fixtures/` (`nfse-pequena/media/grande.xml`, a última com ~387 itens) são geradas por `npm run fixtures:nfse` e carregadas pelo seed.
+
 ## Suposições registradas
 
 - Extratos bancários (SC-01) chegam em PDF nativo ou em foto (JPEG/PNG) — não em PDF escaneado sem OCR embutido; a leitura usa a API multimodal da Anthropic diretamente sobre o documento, sem etapa separada de OCR.
