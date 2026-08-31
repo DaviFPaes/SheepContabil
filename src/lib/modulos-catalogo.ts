@@ -28,7 +28,7 @@ export const CATALOGO_MODULOS: ModuloCatalogo[] = [
     setorDono: "BPO Saúde",
     descricao:
       "Classifica cada item de nota fiscal de serviço médico na alíquota de presunção correta.",
-    implementado: false,
+    implementado: true,
   },
   {
     codigo: "SC-18",
