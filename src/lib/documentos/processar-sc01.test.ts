@@ -1,6 +1,10 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { prisma } from "@/lib/prisma";
-import { criarExtratorFake, type LinhaExtraida } from "./extrator-extrato";
+import {
+  criarExtratorFake,
+  type ExtratorExtrato,
+  type LinhaExtraida,
+} from "./extrator-extrato";
 import { processarDocumento, processarExtratos } from "./processar-sc01";
 
 // Limpeza por prefixo de nomeArquivo + CNPJ fixo (nao por timestamp): cada teste
@@ -16,6 +20,18 @@ afterEach(async () => {
     where: { nomeArquivo: { startsWith: MARCADOR } },
   });
   await prisma.cliente.deleteMany({ where: { cnpj: "77.777.777/0001-77" } });
+
+  // processarExtratos faz um sweep GLOBAL: ele tambem varre os 4 extratos do
+  // seed (extrato-*.pdf / extrato-foto.jpg), se o banco estiver semeado.
+  // Devolve esses ao estado original pra suite ficar idempotente e a caixa de
+  // entrada de demonstracao continuar populada apos rodar os testes.
+  await prisma.lancamento.deleteMany({
+    where: { documentoEntrada: { nomeArquivo: { startsWith: "extrato-" } } },
+  });
+  await prisma.documentoEntrada.updateMany({
+    where: { tipo: "EXTRATO", nomeArquivo: { startsWith: "extrato-" } },
+    data: { status: "PENDENTE", processadoEm: null, erro: null },
+  });
 });
 
 async function clienteTeste() {
@@ -30,7 +46,7 @@ async function clienteTeste() {
   });
 }
 
-async function docTeste(nome: string) {
+async function docTeste(nome: string, conteudo = "fake-pdf-bytes") {
   const cliente = await clienteTeste();
   return prisma.documentoEntrada.create({
     data: {
@@ -38,7 +54,7 @@ async function docTeste(nome: string) {
       clienteId: cliente.id,
       nomeArquivo: `${MARCADOR}-${nome}.pdf`,
       mimeType: "application/pdf",
-      arquivo: Buffer.from("fake-pdf-bytes"),
+      arquivo: Buffer.from(conteudo),
       chegadaEm: new Date(),
     },
   });
@@ -95,28 +111,34 @@ describe("processarDocumento", () => {
 
 describe("processarExtratos", () => {
   it("processa o lote e devolve PARCIAL quando um documento falha", async () => {
-    const bom = await docTeste("bom");
-    const ruim = await docTeste("ruim");
-    // marca o "ruim" com um mime invalido pra forcar erro no extrator real? nao —
-    // usa um extrator que falha so pro segundo id:
-    let n = 0;
-    const extrator = async () => {
-      n += 1;
-      if (n === 2) throw new Error("Arquivo ilegível.");
+    const bom = await docTeste("bom", "conteudo-extrato-bom");
+    const ruim = await docTeste("ruim", "conteudo-extrato-ruim-ilegivel");
+
+    // Extrator POR DOCUMENTO (nao por contador de chamadas): quebra so no doc
+    // cujo conteudo marca "ruim". Assim o teste nao depende da ordem nem da
+    // quantidade de pendentes — processarExtratos faz um sweep global e pode
+    // pegar tambem os extratos do seed.
+    const extrator: ExtratorExtrato = async ({ base64 }) => {
+      const conteudo = Buffer.from(base64, "base64").toString("utf8");
+      if (conteudo.includes("ruim")) throw new Error("Arquivo ilegível.");
       return LINHAS_OK;
     };
     const resultado = await processarExtratos({ extrator });
 
+    // Ao menos um doc falhou (o "ruim"), entao o lote e PARCIAL.
     expect(resultado.status).toBe("PARCIAL");
-    expect(resultado.resumo).toMatch(/1 processad|1 com erro/i);
+    expect(resultado.resumo).toMatch(/documento\(s\) no lote/i);
+    expect(resultado.resumo).toMatch(/com erro/i);
 
-    const idsBom = await prisma.documentoEntrada.findUniqueOrThrow({
+    // Afirma so sobre os 2 docs deste teste — o sweep pode ter tocado noutros.
+    const depoisBom = await prisma.documentoEntrada.findUniqueOrThrow({
       where: { id: bom.id },
     });
-    const idsRuim = await prisma.documentoEntrada.findUniqueOrThrow({
+    const depoisRuim = await prisma.documentoEntrada.findUniqueOrThrow({
       where: { id: ruim.id },
     });
-    // um dos dois processou e o outro deu erro (a ordem depende do orderBy)
-    expect([idsBom.status, idsRuim.status].sort()).toEqual(["ERRO", "PROCESSADO"]);
+    expect(depoisBom.status).toBe("PROCESSADO");
+    expect(depoisRuim.status).toBe("ERRO");
+    expect(depoisRuim.erro).toContain("ilegível");
   });
 });

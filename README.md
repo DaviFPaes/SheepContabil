@@ -75,6 +75,20 @@ CRUD de certificados na própria página (cliente + data de validade). Visível 
 
 Fronteira mockada: o `AvisoCertificado` guarda a mensagem, mas **não há envio real** — aqui entraria a integração com e-mail / sistema de avisos. A rota de cron é protegida por `CRON_SECRET` no header `Authorization: Bearer`.
 
+### SC-01 — Conversão de extrato bancário para OFX
+
+Caixa de entrada de documentos (`DocumentoEntrada`, compartilhada com o SC-11). O operador sobe um extrato em **PDF ou foto** (JPG/PNG) para um cliente + conta bancária; o botão **Processar pendentes** (ou o cron mensal `/api/cron/sc-01`, dia 2 às 08:00 UTC) manda cada documento para a **API multimodal da Anthropic** (`claude-opus-5`, sem OCR separado), que devolve os lançamentos `{data, histórico, valor}` com **confiança por linha**.
+
+Linhas com confiança `< 0.85` entram numa **fila de conferência** — com o trecho original ao lado — e precisam ser confirmadas (ou corrigidas) manualmente. **O download do OFX só libera quando não há mais nenhuma linha em conferência.** O arquivo gerado é **OFX 1.0.2 (SGML)**, formato que os softwares contábeis brasileiros importam.
+
+Processamento é **granular por documento**: se um extrato falha (ilegível, IA fora do ar), só ele vira `ERRO`; os outros do lote seguem.
+
+**Precisa de `ANTHROPIC_API_KEY`.** Sem ela, processar um documento o marca como `ERRO` com "IA indisponível" — o resto do portal continua funcionando.
+
+Fronteira mockada: o "sistema contábil" que importaria o OFX não existe — a entrega é o arquivo `.ofx` para download.
+
+Fixtures de demonstração em `prisma/fixtures/` (3 PDFs com leiautes diferentes + 1 foto em JPEG) são gerados por `npm run fixtures` e carregados pelo seed.
+
 ## Suposições registradas
 
 - Extratos bancários (SC-01) chegam em PDF nativo ou em foto (JPEG/PNG) — não em PDF escaneado sem OCR embutido; a leitura usa a API multimodal da Anthropic diretamente sobre o documento, sem etapa separada de OCR.
