@@ -3,6 +3,10 @@
 import { useActionState } from "react";
 import { confirmarLancamento } from "@/lib/documentos/acoes-sc01";
 import type { LancamentoDetalhe } from "@/lib/documentos/consultas-sc01";
+import {
+  formatarConfianca,
+  tomConfianca,
+} from "@/lib/documentos/formato-documentos";
 
 const CAMPO =
   "rounded border border-grafite/40 bg-white px-3 py-2 text-sm text-tinta outline-none transition-colors focus:border-turquesa focus:ring-2 focus:ring-turquesa/20 motion-reduce:transition-none";
@@ -13,14 +17,8 @@ function dataParaInput(data: Date): string {
   return data.toISOString().slice(0, 10);
 }
 
-function tomConfianca(confianca: number): string {
-  if (confianca >= 0.85) return "text-turquesa";
-  if (confianca >= 0.6) return "text-ambar";
-  return "text-carmim";
-}
-
 function MedidorConfianca({ confianca }: { confianca: number }) {
-  const pct = Math.round(confianca * 100);
+  const pct = formatarConfianca(confianca);
   return (
     <span
       className={`inline-flex items-center gap-2 font-codigo text-xs tabular-nums ${tomConfianca(confianca)}`}
@@ -32,10 +30,10 @@ function MedidorConfianca({ confianca }: { confianca: number }) {
         <span
           className="absolute inset-y-0 left-0 rounded-full bg-current"
           /* largura orientada por dado — unico valor que nao cabe num utilitario */
-          style={{ width: `${pct}%` }}
+          style={{ width: pct }}
         />
       </span>
-      {pct}% de confiança
+      {pct} de confiança
     </span>
   );
 }

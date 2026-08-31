@@ -1,8 +1,10 @@
 import type { DocumentoDetalhe } from "@/lib/documentos/consultas-sc01";
 import type { StatusConferencia } from "@/lib/documentos/conferencia";
 import {
+  formatarConfianca,
   formatarDataUTC,
   formatarValor,
+  tomConfianca,
 } from "@/lib/documentos/formato-documentos";
 import { LinhaConferencia } from "./LinhaConferencia";
 
@@ -35,12 +37,6 @@ function BadgeLancamento({ status }: { status: StatusConferencia }) {
       {rotulo}
     </span>
   );
-}
-
-function tomConfianca(confianca: number): string {
-  if (confianca >= 0.85) return "text-turquesa";
-  if (confianca >= 0.6) return "text-ambar";
-  return "text-carmim";
 }
 
 export function PainelLancamentos({
@@ -165,7 +161,7 @@ export function PainelLancamentos({
                       lancamento.confianca,
                     )}`}
                   >
-                    {Math.round(lancamento.confianca * 100)}%
+                    {formatarConfianca(lancamento.confianca)}
                   </td>
                   <td className={CELULA}>
                     <BadgeLancamento status={lancamento.status} />
