@@ -1,15 +1,9 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { IaIndisponivelError, traduzirErroAnthropic } from "@/lib/ia";
+
+export { IaIndisponivelError } from "@/lib/ia";
 
 const MODELO = "claude-opus-5";
-
-export class IaIndisponivelError extends Error {
-  constructor(
-    mensagem = "IA indisponível. Configure ANTHROPIC_API_KEY para processar documentos.",
-  ) {
-    super(mensagem);
-    this.name = "IaIndisponivelError";
-  }
-}
 
 export type LinhaExtraida = {
   data: string; // ISO yyyy-mm-dd
@@ -120,20 +114,7 @@ export const extrairExtratoComClaude: ExtratorExtrato = async ({
     });
     mensagem = await stream.finalMessage();
   } catch (erro) {
-    if (erro instanceof Anthropic.AuthenticationError) {
-      throw new IaIndisponivelError("Chave da Anthropic inválida.");
-    }
-    if (erro instanceof Anthropic.RateLimitError) {
-      throw new Error(
-        "A IA está sobrecarregada no momento. Tente processar de novo em alguns minutos.",
-      );
-    }
-    if (erro instanceof Anthropic.APIError) {
-      throw new Error(
-        `A IA não conseguiu processar o documento (erro ${erro.status}). Verifique se o arquivo está legível.`,
-      );
-    }
-    throw erro;
+    throw traduzirErroAnthropic(erro);
   }
 
   const toolUse = mensagem.content.find((b) => b.type === "tool_use");
