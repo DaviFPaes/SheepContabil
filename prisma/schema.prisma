@@ -36,6 +36,8 @@ model Cliente {
   atividade   String
   criadoEm    DateTime @default(now())
   certificados Certificado[]
+  contasBancarias   ContaBancaria[]
+  documentosEntrada DocumentoEntrada[]
 }
 
 model Execucao {
@@ -80,4 +82,69 @@ model AvisoCertificado {
   criadoEm      DateTime      @default(now())
 
   @@index([certificadoId, criadoEm])
+}
+
+enum TipoDocumento {
+  EXTRATO
+  NFSE
+}
+
+enum StatusDocumento {
+  PENDENTE
+  PROCESSADO
+  ERRO
+}
+
+enum StatusLancamento {
+  CONFIRMADO
+  PENDENTE_REVISAO
+}
+
+model ContaBancaria {
+  id         String             @id @default(cuid())
+  clienteId  String
+  cliente    Cliente            @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  bancoNome  String
+  compe      String             // código COMPE de 3 dígitos (ex. "341")
+  agencia    String
+  numero     String
+  documentos DocumentoEntrada[]
+  criadoEm   DateTime           @default(now())
+
+  @@index([clienteId])
+}
+
+model DocumentoEntrada {
+  id              String          @id @default(cuid())
+  tipo            TipoDocumento
+  clienteId       String
+  cliente         Cliente         @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  contaBancariaId String?
+  contaBancaria   ContaBancaria?  @relation(fields: [contaBancariaId], references: [id])
+  nomeArquivo     String
+  mimeType        String
+  arquivo         Bytes
+  status          StatusDocumento @default(PENDENTE)
+  chegadaEm       DateTime
+  processadoEm    DateTime?
+  erro            String?
+  lancamentos     Lancamento[]
+  criadoEm        DateTime        @default(now())
+
+  @@index([tipo, status])
+}
+
+model Lancamento {
+  id                 String           @id @default(cuid())
+  documentoEntradaId String
+  documentoEntrada   DocumentoEntrada @relation(fields: [documentoEntradaId], references: [id], onDelete: Cascade)
+  data               DateTime
+  historico          String
+  valor              Decimal          @db.Decimal(14, 2)
+  confianca          Float
+  trechoOriginal     String?
+  status             StatusLancamento @default(CONFIRMADO)
+  criadoEm           DateTime         @default(now())
+
+  @@index([documentoEntradaId])
 }
