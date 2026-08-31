@@ -109,7 +109,7 @@ export const extrairExtratoComClaude: ExtratorExtrato = async ({
     const stream = client.messages.stream({
       model: MODELO,
       max_tokens: 32000,
-      thinking: { type: "enabled", budget_tokens: 10000 },
+      thinking: { type: "adaptive" },
       tools: [FERRAMENTA],
       messages: [
         {
