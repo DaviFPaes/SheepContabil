@@ -138,6 +138,16 @@ describe("processarDocumento", () => {
 
     expect(tamanhos.length).toBeGreaterThanOrEqual(2);
     expect(Math.max(...tamanhos)).toBeLessThanOrEqual(CHUNK_ITENS);
+
+    const nota = await prisma.notaServico.findFirstOrThrow({
+      where: { documentoEntradaId: doc.id },
+      include: { itens: true },
+    });
+    expect(nota.itens).toHaveLength(CHUNK_ITENS + 5);
+    expect(nota.itens.every((i) => i.origem === "IA")).toBe(true);
+    expect(nota.itens.every((i) => i.aliquota === "P8")).toBe(true);
+    expect(nota.itens.every((i) => i.confianca === 0.99)).toBe(true);
+    expect(nota.itens.every((i) => i.status === "CONFIRMADO")).toBe(true);
   });
 
   it("não reprocessa um doc que já saiu de PENDENTE", async () => {
