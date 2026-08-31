@@ -43,4 +43,10 @@ describe("gerarCsvRelatorio", () => {
     expect(csv).toContain("BASE 32%;200.00;;;64.00");
     expect(csv).toContain("TOTAL;650.00;;;100.00");
   });
+
+  it("neutraliza valor que começa com caractere de fórmula", () => {
+    const nota = { ...NOTA, itens: [{ ...NOTA.itens[0], descricao: "=SOMA(A1:A9)" }] };
+    const c = gerarCsvRelatorio(nota);
+    expect(c).toContain("'=SOMA(A1:A9)");
+  });
 });

@@ -29,6 +29,7 @@ function texto(v: unknown): string {
 
 function paraNumero(v: unknown): number {
   const s = texto(v);
+  if (s === "") return NaN; // vazio/ausente não é zero
   // vírgula presente => formato pt-BR: ponto é separador de milhar, vírgula é decimal.
   // sem vírgula => já é número simples (ponto é o decimal, ou não há decimal).
   const normalizado = s.includes(",") ? s.replace(/\./g, "").replace(",", ".") : s;
@@ -62,6 +63,9 @@ export function parsearNfse(xml: string): NfseParseada {
   const numero = texto(inf.Numero);
   const dataEmissao = texto(inf.DataEmissao).slice(0, 10);
   const valorTotal = paraNumero(inf.ValorTotal);
+  if (!Number.isFinite(valorTotal)) {
+    throw new XmlInvalidoError("NFS-e sem valor total numérico.");
+  }
   if (!numero || !/^\d{4}-\d{2}-\d{2}$/.test(dataEmissao)) {
     throw new XmlInvalidoError();
   }

@@ -111,6 +111,9 @@ export async function revisarItem(
     include: { notaServico: true },
   });
   if (!item) return { erro: "Item não encontrado." };
+  if (item.status !== "PENDENTE_REVISAO") {
+    return { erro: "Item já confirmado; não é editável." };
+  }
 
   const mudou = item.aliquota !== dados.data.aliquota;
   await prisma.itemNota.update({
@@ -127,16 +130,6 @@ export async function revisarItem(
   });
   revalidatePath(`${ROTA}/nota/${item.notaServico.documentoEntradaId}`);
   return null;
-}
-
-export async function excluirNota(formData: FormData): Promise<void> {
-  await exigirAcessoSc11();
-  const documentoId = String(formData.get("documentoId") ?? "");
-  if (documentoId) {
-    await prisma.documentoEntrada.deleteMany({ where: { id: documentoId } });
-  }
-  revalidatePath(ROTA);
-  redirect(ROTA);
 }
 
 // ---- Termos (admin) ----

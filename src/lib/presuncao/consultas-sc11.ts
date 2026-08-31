@@ -82,7 +82,9 @@ export async function obterNotaComItens(
     where: { id: documentoId },
     include: {
       cliente: { select: { razaoSocial: true } },
-      notaServico: { include: { itens: { orderBy: { criadoEm: "asc" } } } },
+      notaServico: {
+        include: { itens: { orderBy: [{ criadoEm: "asc" }, { id: "asc" }] } },
+      },
     },
   });
   if (!d || d.tipo !== "NFSE") return null;

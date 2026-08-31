@@ -27,6 +27,7 @@ Abra `http://localhost:3000`.
 |---|---|---|
 | Administrador | admin@sheepcontabil.com.br | AdminSheep#2026 |
 | Operador (setor Processos) | operador.processos@sheepcontabil.com.br | OperadorSheep#2026 |
+| Operador (setor BPO Saúde — vê o SC-11) | operador.saude@sheepcontabil.com.br | OperadorSheep#2026 |
 
 ## Testes
 

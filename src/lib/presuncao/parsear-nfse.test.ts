@@ -61,4 +61,14 @@ describe("parsearNfse", () => {
     const xml = `<NFSe><InfNfse><Numero>1</Numero><DataEmissao>2026-08-01</DataEmissao><ListaItens><Item><Discriminacao>X</Discriminacao><Valor>abc</Valor></Item></ListaItens><ValorTotal>0</ValorTotal></InfNfse></NFSe>`;
     expect(() => parsearNfse(xml)).toThrow(XmlInvalidoError);
   });
+
+  it("lança XmlInvalidoError quando um item tem <Valor> vazio", () => {
+    const xml = `<NFSe><InfNfse><Numero>1</Numero><DataEmissao>2026-08-01</DataEmissao><ListaItens><Item><Discriminacao>X</Discriminacao><Valor></Valor></Item></ListaItens><ValorTotal>0</ValorTotal></InfNfse></NFSe>`;
+    expect(() => parsearNfse(xml)).toThrow(XmlInvalidoError);
+  });
+
+  it("lança XmlInvalidoError quando falta <ValorTotal>", () => {
+    const xml = `<NFSe><InfNfse><Numero>1</Numero><DataEmissao>2026-08-01</DataEmissao><ListaItens><Item><Discriminacao>X</Discriminacao><Valor>10</Valor></Item></ListaItens></InfNfse></NFSe>`;
+    expect(() => parsearNfse(xml)).toThrow(XmlInvalidoError);
+  });
 });

@@ -114,20 +114,18 @@ export async function processarDocumento(
           valorTotal: nota.valorTotal,
         },
       });
-      for (const item of itens) {
-        await tx.itemNota.create({
-          data: {
-            notaServicoId: criada.id,
-            descricao: item.descricao,
-            valor: item.valor,
-            aliquota: item.aliquota,
-            origem: item.origem,
-            justificativa: item.justificativa,
-            confianca: item.confianca,
-            status: item.status,
-          },
-        });
-      }
+      await tx.itemNota.createMany({
+        data: itens.map((item) => ({
+          notaServicoId: criada.id,
+          descricao: item.descricao,
+          valor: item.valor,
+          aliquota: item.aliquota,
+          origem: item.origem,
+          justificativa: item.justificativa,
+          confianca: item.confianca,
+          status: item.status,
+        })),
+      });
       await tx.documentoEntrada.update({
         where: { id: doc.id },
         data: { status: "PROCESSADO", processadoEm: new Date(), erro: null },

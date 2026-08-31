@@ -2,8 +2,10 @@ import type { NotaDetalhe } from "./consultas-sc11";
 import { ROTULO_ALIQUOTA, ROTULO_ORIGEM } from "./formato-presuncao";
 
 function campo(v: string): string {
-  // separador é ';' — se o valor tem ';', '"' ou quebra de linha, entre aspas
-  if (/[;"\n]/.test(v)) return `"${v.replace(/"/g, '""')}"`;
+  // injeção de fórmula: Excel executa célula que começa com =, +, - ou @ — neutraliza com aspa simples
+  if (/^[=+\-@]/.test(v)) v = "'" + v;
+  // separador é ';' — se o valor tem ';', '"' ou quebra de linha (\r ou \n), entre aspas
+  if (/[;"\r\n]/.test(v)) return `"${v.replace(/"/g, '""')}"`;
   return v;
 }
 
