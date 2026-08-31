@@ -135,11 +135,4 @@ export async function listarContasDoCliente(
   }));
 }
 
-export async function listarClientesParaUpload(): Promise<
-  { id: string; razaoSocial: string }[]
-> {
-  return prisma.cliente.findMany({
-    orderBy: { razaoSocial: "asc" },
-    select: { id: true, razaoSocial: true },
-  });
-}
+export { listarClientesParaUpload } from "@/lib/clientes";
