@@ -14,7 +14,7 @@ const ROTA = "/modulos/sc-01";
 const MIMES_OK = ["application/pdf", "image/jpeg", "image/png"];
 const TAMANHO_MAX = 15 * 1024 * 1024;
 
-export async function exigirAcessoSc01() {
+async function exigirAcessoSc01() {
   const sessao = await obterSessao();
   const podeVer =
     sessao !== null &&
@@ -134,11 +134,15 @@ export async function confirmarLancamento(
     status: "CONFIRMADO",
     confianca: 1,
   };
-  if (dados.data.data) patch.data = new Date(`${dados.data.data}T00:00:00Z`);
+  if (dados.data.data) {
+    const d = new Date(`${dados.data.data}T00:00:00Z`);
+    if (Number.isNaN(d.getTime())) return { erro: "Data inválida." };
+    patch.data = d;
+  }
   if (dados.data.historico) patch.historico = dados.data.historico;
-  if (dados.data.valor !== undefined && dados.data.valor !== "") {
-    const n = Number(dados.data.valor.replace(",", "."));
-    if (Number.isNaN(n)) return { erro: "Valor inválido." };
+  if (dados.data.valor !== undefined && dados.data.valor.trim() !== "") {
+    const n = Number(dados.data.valor.trim().replace(",", "."));
+    if (!Number.isFinite(n)) return { erro: "Valor inválido." };
     patch.valor = n;
   }
 
