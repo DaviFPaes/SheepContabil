@@ -129,6 +129,7 @@ model DocumentoEntrada {
   processadoEm    DateTime?
   erro            String?
   lancamentos     Lancamento[]
+  notaServico     NotaServico?
   criadoEm        DateTime        @default(now())
 
   @@index([tipo, status])
@@ -147,4 +148,73 @@ model Lancamento {
   criadoEm           DateTime         @default(now())
 
   @@index([documentoEntradaId])
+}
+
+enum AliquotaPresuncao {
+  P8
+  P32
+}
+
+enum OrigemDecisao {
+  REGRA
+  IA
+  MANUAL
+}
+
+enum StatusItemNota {
+  CONFIRMADO
+  PENDENTE_REVISAO
+}
+
+enum AcaoAuditoria {
+  CRIACAO
+  RECLASSIFICACAO
+  REMOCAO
+}
+
+model TermoPresuncao {
+  id       String            @id @default(cuid())
+  termo    String            @unique
+  aliquota AliquotaPresuncao
+  criadoEm DateTime          @default(now())
+}
+
+model AuditoriaTermo {
+  id               String             @id @default(cuid())
+  termoId          String?
+  termoTexto       String
+  acao             AcaoAuditoria
+  aliquotaAnterior AliquotaPresuncao?
+  aliquotaNova     AliquotaPresuncao?
+  autorEmail       String
+  criadoEm         DateTime           @default(now())
+
+  @@index([criadoEm])
+}
+
+model NotaServico {
+  id                 String           @id @default(cuid())
+  documentoEntradaId String           @unique
+  documentoEntrada   DocumentoEntrada @relation(fields: [documentoEntradaId], references: [id], onDelete: Cascade)
+  numero             String
+  dataEmissao        DateTime
+  valorTotal         Decimal          @db.Decimal(14, 2)
+  itens              ItemNota[]
+  criadoEm           DateTime         @default(now())
+}
+
+model ItemNota {
+  id            String            @id @default(cuid())
+  notaServicoId String
+  notaServico   NotaServico       @relation(fields: [notaServicoId], references: [id], onDelete: Cascade)
+  descricao     String
+  valor         Decimal           @db.Decimal(14, 2)
+  aliquota      AliquotaPresuncao
+  origem        OrigemDecisao
+  justificativa String
+  confianca     Float?
+  status        StatusItemNota    @default(CONFIRMADO)
+  criadoEm      DateTime          @default(now())
+
+  @@index([notaServicoId])
 }
