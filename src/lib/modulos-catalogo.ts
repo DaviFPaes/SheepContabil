@@ -19,7 +19,7 @@ export const CATALOGO_MODULOS: ModuloCatalogo[] = [
     setorDono: "Contábil",
     descricao:
       "Lê extratos em PDF ou foto e gera um arquivo OFX pronto para importar.",
-    implementado: false,
+    implementado: true,
   },
   {
     codigo: "SC-11",
