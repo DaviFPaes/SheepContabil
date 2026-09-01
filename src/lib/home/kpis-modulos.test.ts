@@ -1,19 +1,25 @@
 import { describe, expect, it } from "vitest";
-import type { CertificadoComStatus } from "@/lib/certificados/consultas";
+import type { CertificadoLinha } from "@/lib/certificados/consultas";
 import type { DocumentoResumo } from "@/lib/documentos/consultas-sc01";
 import type { NotaResumo } from "@/lib/presuncao/consultas-sc11";
 import { resumirKpiSc01, resumirKpiSc11, resumirKpiSc20 } from "./kpis-modulos";
 
-function certificado(
-  faixa: CertificadoComStatus["faixa"],
-): CertificadoComStatus {
+function certificado(bucket: CertificadoLinha["bucket"]): CertificadoLinha {
   return {
     id: `cert-${Math.random()}`,
     clienteId: "cli-1",
     razaoSocial: "Clínica Exemplo Ltda",
+    clienteEmail: "contato@clinica.example",
+    titular: "Clínica Exemplo Ltda",
+    tipo: "ECNPJ",
     dataValidade: new Date("2026-10-01T00:00:00Z"),
+    emitidoEm: new Date("2025-10-01T00:00:00Z"),
     diasRestantes: 0,
-    faixa,
+    bucket,
+    ativo: true,
+    renovadoEm: null,
+    avisoD60: null,
+    avisoD7: null,
   };
 }
 
@@ -49,11 +55,11 @@ function nota(status: NotaResumo["status"], emRevisao = 0): NotaResumo {
 }
 
 describe("resumirKpiSc20", () => {
-  it("conta vencidos e críticos juntos como atenção", () => {
+  it("conta vencidos e críticos (VENCIDO/D3/D7) juntos como atenção", () => {
     const kpi = resumirKpiSc20([
       certificado("VENCIDO"),
-      certificado("CRITICO"),
-      certificado("CRITICO"),
+      certificado("D7"),
+      certificado("D3"),
       certificado("OK"),
     ]);
     expect(kpi).toEqual({
@@ -63,11 +69,11 @@ describe("resumirKpiSc20", () => {
     });
   });
 
-  it("acrescenta a contagem de alerta como detalhe", () => {
+  it("acrescenta a contagem de alerta (D60) como detalhe", () => {
     const kpi = resumirKpiSc20([
-      certificado("CRITICO"),
-      certificado("ALERTA"),
-      certificado("ALERTA"),
+      certificado("D7"),
+      certificado("D60"),
+      certificado("D60"),
     ]);
     expect(kpi).toEqual({
       valor: 1,
@@ -78,7 +84,7 @@ describe("resumirKpiSc20", () => {
   });
 
   it("cai para alerta quando não há nenhum crítico", () => {
-    const kpi = resumirKpiSc20([certificado("ALERTA"), certificado("PROXIMO")]);
+    const kpi = resumirKpiSc20([certificado("D60"), certificado("OK")]);
     expect(kpi).toEqual({
       valor: 1,
       rotulo: "certificado em alerta",
@@ -87,7 +93,7 @@ describe("resumirKpiSc20", () => {
   });
 
   it("fica em dia quando tudo está tranquilo", () => {
-    const kpi = resumirKpiSc20([certificado("PROXIMO"), certificado("OK")]);
+    const kpi = resumirKpiSc20([certificado("OK"), certificado("RENOVADO")]);
     expect(kpi).toEqual({
       valor: 0,
       rotulo: "certificados em dia",

@@ -1,6 +1,6 @@
 import {
-  listarCertificadosComStatus,
-  type CertificadoComStatus,
+  listarCertificados,
+  type CertificadoLinha,
 } from "@/lib/certificados/consultas";
 import {
   listarDocumentos,
@@ -35,14 +35,16 @@ const concordar = (n: number, singular: string, plural: string): string =>
 const contar = (n: number, singular: string, plural: string): string =>
   `${n} ${concordar(n, singular, plural)}`;
 
-/** SC-20 — certificados digitais perto do vencimento. */
+/** SC-20 — certificados digitais perto do vencimento.
+ *  `bucket` (pós-refatoração do SC-20): VENCIDO | D3 | D7 | D60 | OK | RENOVADO.
+ *  Crítico = já venceu ou vence em até 7 dias (VENCIDO/D3/D7); alerta = D60. */
 export function resumirKpiSc20(
-  certificados: CertificadoComStatus[],
+  certificados: CertificadoLinha[],
 ): KpiModulo {
   const criticos = certificados.filter(
-    (c) => c.faixa === "VENCIDO" || c.faixa === "CRITICO",
+    (c) => c.bucket === "VENCIDO" || c.bucket === "D3" || c.bucket === "D7",
   ).length;
-  const emAlerta = certificados.filter((c) => c.faixa === "ALERTA").length;
+  const emAlerta = certificados.filter((c) => c.bucket === "D60").length;
 
   if (criticos > 0) {
     return {
@@ -195,7 +197,7 @@ export async function obterKpiModulo(
 ): Promise<KpiModulo | null> {
   switch (codigo) {
     case "SC-20":
-      return resumirKpiSc20(await listarCertificadosComStatus());
+      return resumirKpiSc20(await listarCertificados());
     case "SC-01":
       return resumirKpiSc01(await listarDocumentos("EXTRATO"));
     case "SC-11":
