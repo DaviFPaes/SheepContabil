@@ -42,6 +42,7 @@ async function clienteTeste() {
       razaoSocial: "Cliente SC-01 Teste",
       cnpj: "77.777.777/0001-77",
       atividade: "Teste",
+      email: "cliente-sc01-teste@example.com",
     },
   });
 }

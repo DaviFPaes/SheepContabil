@@ -37,7 +37,12 @@ async function notaProcessada(nome: string, confianca: number) {
   const cliente = await prisma.cliente.upsert({
     where: { cnpj: CNPJ },
     update: {},
-    create: { razaoSocial: "Cliente SC-11 Teste", cnpj: CNPJ, atividade: "Teste" },
+    create: {
+      razaoSocial: "Cliente SC-11 Teste",
+      cnpj: CNPJ,
+      atividade: "Teste",
+      email: "cliente-sc11-teste@example.com",
+    },
   });
   const doc = await prisma.documentoEntrada.create({
     data: {

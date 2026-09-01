@@ -60,6 +60,18 @@ const CLIENTES = [
   { razaoSocial: "Épsilon Tecnologia da Informação Ltda", atividade: "Serviços de TI", base: "88999000" },
 ];
 
+// Patch minimo pos-migracao sc20_kanban_avisos: email agora e obrigatorio em
+// Cliente. Slug simples (sem unaccent) — mesma normalizacao do backfill da
+// migracao, so pra manter os dois caminhos consistentes.
+function slugEmail(razaoSocial: string): string {
+  return (
+    razaoSocial
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "") + "@example.com"
+  );
+}
+
 async function seedClientes() {
   for (const cliente of CLIENTES) {
     const cnpj = gerarCnpjValido(cliente.base);
@@ -70,6 +82,7 @@ async function seedClientes() {
         razaoSocial: cliente.razaoSocial,
         cnpj,
         atividade: cliente.atividade,
+        email: slugEmail(cliente.razaoSocial),
       },
     });
   }
@@ -103,8 +116,17 @@ async function seedCertificados() {
         data: { dataValidade },
       });
     } else {
+      // Patch minimo pos-migracao sc20_kanban_avisos: tipo/titular/emitidoEm
+      // agora sao obrigatorios em Certificado. seedSc20() (Task 19) substitui
+      // este seed antigo pelo cenario completo do Kanban.
       await prisma.certificado.create({
-        data: { clienteId: cliente.id, dataValidade },
+        data: {
+          clienteId: cliente.id,
+          dataValidade,
+          tipo: "ECNPJ",
+          titular: cliente.razaoSocial,
+          emitidoEm: new Date(dataValidade.getTime() - 365 * 24 * 60 * 60 * 1000),
+        },
       });
     }
   }

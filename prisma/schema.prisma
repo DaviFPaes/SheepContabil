@@ -27,6 +27,9 @@ model Usuario {
   papel     PapelUsuario
   setor     String?
   criadoEm  DateTime     @default(now())
+
+  notificacoes       NotificacaoInApp[]
+  registrosAuditoria RegistroAuditoria[]
 }
 
 model Cliente {
@@ -34,10 +37,15 @@ model Cliente {
   razaoSocial String
   cnpj        String   @unique
   atividade   String
+  email       String
+  ativo       Boolean  @default(true)
   criadoEm    DateTime @default(now())
   certificados Certificado[]
   contasBancarias   ContaBancaria[]
   documentosEntrada DocumentoEntrada[]
+  avisos             AvisoCertificado[]
+  notificacoes       NotificacaoInApp[]
+  registrosAuditoria RegistroAuditoria[]
 }
 
 model Execucao {
@@ -53,35 +61,117 @@ model Execucao {
   @@index([moduloCodigo, iniciadoEm])
 }
 
-enum FaixaUrgencia {
-  VENCIDO
-  CRITICO
-  ALERTA
-  PROXIMO
+enum TipoCertificado {
+  ECNPJ
+  ECPF
+  NFE
+}
+
+enum BucketCertificado {
   OK
+  D60
+  D7
+  D3
+  VENCIDO
+  RENOVADO
+}
+
+enum MarcoAviso {
+  D60
+  D7
+}
+
+enum StatusAviso {
+  QUEUED
+  SENT
+  DELIVERED
+  BOUNCED
+  FAILED
+}
+
+enum TipoNotificacao {
+  D60_ENTROU
+  D7_ENTROU
+  D3_ENTROU
 }
 
 model Certificado {
-  id           String             @id @default(cuid())
-  clienteId    String
-  cliente      Cliente            @relation(fields: [clienteId], references: [id], onDelete: Cascade)
-  dataValidade DateTime
-  criadoEm     DateTime           @default(now())
-  avisos       AvisoCertificado[]
+  id               String             @id @default(cuid())
+  clienteId        String
+  cliente          Cliente            @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  tipo             TipoCertificado
+  titular          String
+  emitidoEm        DateTime
+  dataValidade     DateTime
+  ativo            Boolean            @default(true)
+  observacao       String?
+  substituidoPorId String?            @unique
+  substituidoPor   Certificado?       @relation("Renovacao", fields: [substituidoPorId], references: [id])
+  substituiu       Certificado?       @relation("Renovacao")
+  renovadoEm       DateTime?
+  bucket           BucketCertificado  @default(OK)
+  criadoEm         DateTime           @default(now())
+  atualizadoEm     DateTime           @updatedAt
+  avisos           AvisoCertificado[]
+  notificacoes     NotificacaoInApp[]
 
   @@index([dataValidade])
+  @@index([clienteId])
+  @@index([bucket])
 }
 
 model AvisoCertificado {
-  id            String        @id @default(cuid())
-  certificadoId String
-  certificado   Certificado   @relation(fields: [certificadoId], references: [id], onDelete: Cascade)
-  faixa         FaixaUrgencia
-  diasRestantes Int
-  mensagem      String
-  criadoEm      DateTime      @default(now())
+  id                String       @id @default(cuid())
+  certificadoId     String
+  certificado       Certificado  @relation(fields: [certificadoId], references: [id], onDelete: Cascade)
+  clienteId         String
+  cliente           Cliente      @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  marco             MarcoAviso
+  destinatarioEmail String
+  status            StatusAviso  @default(QUEUED)
+  providerMessageId String?
+  enviadoEm         DateTime?
+  criadoEm          DateTime     @default(now())
+  atualizadoEm      DateTime     @updatedAt
 
-  @@index([certificadoId, criadoEm])
+  @@unique([certificadoId, marco])
+  @@index([clienteId])
+}
+
+model NotificacaoInApp {
+  id            String          @id @default(cuid())
+  usuarioId     String
+  usuario       Usuario         @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  tipo          TipoNotificacao
+  certificadoId String
+  certificado   Certificado     @relation(fields: [certificadoId], references: [id], onDelete: Cascade)
+  clienteId     String
+  cliente       Cliente         @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  lidaEm        DateTime?
+  criadoEm      DateTime        @default(now())
+
+  @@index([usuarioId, lidaEm])
+  @@index([usuarioId, tipo, criadoEm])
+}
+
+model RegistroAuditoria {
+  id          String   @id @default(cuid())
+  entidade    String   // "Certificado" | "AvisoCertificado" | "Execucao"
+  entidadeId  String
+  acao        String
+  descricao   String
+  autorId     String?  // null = "Sistema" (cron)
+  autor       Usuario? @relation(fields: [autorId], references: [id])
+  autorEmail  String?
+  clienteId   String?
+  cliente     Cliente? @relation(fields: [clienteId], references: [id])
+  dadosAntes  Json?
+  dadosDepois Json?
+  criadoEm    DateTime @default(now())
+
+  @@index([criadoEm])
+  @@index([entidade, entidadeId, criadoEm])
+  @@index([clienteId, criadoEm])
 }
 
 enum TipoDocumento {

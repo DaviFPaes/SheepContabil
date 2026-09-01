@@ -65,10 +65,19 @@ export async function criarCertificado(
     return { erro: "Cliente não encontrado." };
   }
 
+  // STUB temporario (Task 1 do plano): tipo/titular/emitidoEm agora sao
+  // obrigatorios em Certificado. O formulario real (com esses campos e o
+  // fluxo de renovacao) entra na Task 7 — ModalCertificado, Task 13.
   await prisma.certificado.create({
     data: {
       clienteId: dados.data.clienteId,
       dataValidade: normalizarValidade(dados.data.dataValidade),
+      tipo: "ECNPJ",
+      titular: cliente.razaoSocial,
+      emitidoEm: new Date(
+        normalizarValidade(dados.data.dataValidade).getTime() -
+          365 * 24 * 60 * 60 * 1000,
+      ),
     },
   });
 

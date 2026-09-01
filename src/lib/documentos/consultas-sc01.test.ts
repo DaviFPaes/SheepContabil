@@ -20,7 +20,12 @@ afterEach(async () => {
 
 async function cenario() {
   const cliente = await prisma.cliente.create({
-    data: { razaoSocial: "Consultas SC-01", cnpj: CNPJ, atividade: "T" },
+    data: {
+      razaoSocial: "Consultas SC-01",
+      cnpj: CNPJ,
+      atividade: "T",
+      email: "consultas-sc01@example.com",
+    },
   });
   const doc = await prisma.documentoEntrada.create({
     data: {

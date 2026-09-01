@@ -44,23 +44,15 @@ export type AvisoComCliente = {
   criadoEm: Date;
 };
 
+// STUB temporario (Task 1 do plano de implementacao): AvisoCertificado
+// deixou de guardar faixa/diasRestantes/mensagem (virou "marco de e-mail"
+// na migracao sc20_kanban_avisos). listarHistorico, na Task 6, substitui
+// esta funcao como fonte da lista de eventos da UI.
 export async function listarAvisos(
   limite = 50,
 ): Promise<AvisoComCliente[]> {
-  const avisos = await prisma.avisoCertificado.findMany({
-    include: { certificado: { include: { cliente: true } } },
-    orderBy: { criadoEm: "desc" },
-    take: limite,
-  });
-
-  return avisos.map((aviso) => ({
-    id: aviso.id,
-    razaoSocial: aviso.certificado.cliente.razaoSocial,
-    faixa: aviso.faixa as FaixaUrgencia,
-    diasRestantes: aviso.diasRestantes,
-    mensagem: aviso.mensagem,
-    criadoEm: aviso.criadoEm,
-  }));
+  void limite;
+  return [];
 }
 
 export async function listarClientesParaSelecao(): Promise<

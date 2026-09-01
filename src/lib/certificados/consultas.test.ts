@@ -1,9 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { prisma } from "@/lib/prisma";
-import {
-  listarAvisos,
-  listarCertificadosComStatus,
-} from "./consultas";
+import { listarCertificadosComStatus } from "./consultas";
 
 const CNPJ_TESTE = "88.888.888/0001-88";
 
@@ -31,10 +28,17 @@ describe("listarCertificadosComStatus", () => {
         razaoSocial: "Cliente Consultas SC-20",
         cnpj: CNPJ_TESTE,
         atividade: "Teste",
+        email: "cliente-consultas-sc20@example.com",
       },
     });
     await prisma.certificado.create({
-      data: { clienteId: cliente.id, dataValidade: dataDaqui(10) },
+      data: {
+        clienteId: cliente.id,
+        dataValidade: dataDaqui(10),
+        tipo: "ECNPJ",
+        titular: cliente.razaoSocial,
+        emitidoEm: dataDaqui(-355),
+      },
     });
 
     const lista = await listarCertificadosComStatus();
@@ -46,32 +50,10 @@ describe("listarCertificadosComStatus", () => {
   });
 });
 
+// listarAvisos e reescrita pela Task 6 do plano de implementacao (ver
+// docs/superpowers/plans/2026-09-01-sc-20-vencimento-certificado-etapa-1.md)
+// como parte de listarCertificados/montarColunasKanban/listarHistorico — a
+// migracao sc20_kanban_avisos mudou o que AvisoCertificado representa.
 describe("listarAvisos", () => {
-  it("devolve os avisos com a razao social do cliente e o texto da mensagem", async () => {
-    const cliente = await prisma.cliente.create({
-      data: {
-        razaoSocial: "Cliente Consultas SC-20",
-        cnpj: CNPJ_TESTE,
-        atividade: "Teste",
-      },
-    });
-    const certificado = await prisma.certificado.create({
-      data: { clienteId: cliente.id, dataValidade: dataDaqui(3) },
-    });
-    await prisma.avisoCertificado.create({
-      data: {
-        certificadoId: certificado.id,
-        faixa: "CRITICO",
-        diasRestantes: 3,
-        mensagem: "mensagem de teste",
-      },
-    });
-
-    const avisos = await listarAvisos();
-    const alvo = avisos.find((a) => a.mensagem === "mensagem de teste");
-
-    expect(alvo).toBeDefined();
-    expect(alvo?.razaoSocial).toBe("Cliente Consultas SC-20");
-    expect(alvo?.faixa).toBe("CRITICO");
-  });
+  it.todo("Task 6: substituida por listarCertificados + montarColunasKanban");
 });
