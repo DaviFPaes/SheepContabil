@@ -1,25 +1,29 @@
-import Link from "next/link";
+"use client";
+
 import type { CertificadoLinha } from "@/lib/certificados/consultas";
-import { ROTULO_BUCKET } from "@/lib/certificados/bucket";
+import { textoDias } from "@/lib/certificados/bucket";
 import { dataParaInput, formatarDataUTC } from "@/lib/certificados/formato";
+import { SeloBucket } from "./SeloBucket";
 import { BotaoRemover } from "./BotaoRemover";
 
-// NOTA (Task 12 do plano): este painel ainda usa um <span> cru para a
-// faixa e nao mostra Titular/Tipo — a Task 12 troca por <SeloBucket> (Task
-// 8) e adiciona as colunas, alem de abrir o modal de perfil no clique.
-
-function textoDias(dias: number): string {
-  if (dias < 0) return `vencido há ${Math.abs(dias)} d`;
-  if (dias === 0) return "vence hoje";
-  return `faltam ${dias} d`;
-}
+const ROTULO_TIPO: Record<CertificadoLinha["tipo"], string> = {
+  ECNPJ: "e-CNPJ",
+  ECPF: "e-CPF",
+  NFE: "NF-e",
+};
 
 const CELULA = "px-4 py-3 align-middle";
+const TH =
+  "px-4 py-2.5 font-texto text-xs font-semibold uppercase tracking-wide text-grafite";
 
 export function PainelCertificados({
   certificados,
+  aoEditar,
+  aoAbrirCliente,
 }: {
   certificados: CertificadoLinha[];
+  aoEditar: (id: string) => void;
+  aoAbrirCliente: (clienteId: string) => void;
 }) {
   if (certificados.length === 0) {
     return (
@@ -43,7 +47,7 @@ export function PainelCertificados({
           Nenhum certificado cadastrado
         </p>
         <p className="max-w-sm font-texto text-sm text-grafite">
-          Use o formulário acima para adicionar o primeiro certificado digital.
+          Use o botão <strong>Novo certificado</strong> para adicionar o primeiro.
         </p>
       </div>
     );
@@ -58,30 +62,12 @@ export function PainelCertificados({
           </caption>
           <thead>
             <tr className="border-b border-grafite/20 bg-nevoa/60 text-left">
-              <th
-                scope="col"
-                className="px-4 py-2.5 font-texto text-xs font-semibold uppercase tracking-wide text-grafite"
-              >
-                Cliente
-              </th>
-              <th
-                scope="col"
-                className="px-4 py-2.5 font-texto text-xs font-semibold uppercase tracking-wide text-grafite"
-              >
-                Validade
-              </th>
-              <th
-                scope="col"
-                className="px-4 py-2.5 font-texto text-xs font-semibold uppercase tracking-wide text-grafite"
-              >
-                Situação
-              </th>
-              <th
-                scope="col"
-                className="px-4 py-2.5 font-texto text-xs font-semibold uppercase tracking-wide text-grafite"
-              >
-                Faixa
-              </th>
+              <th scope="col" className={TH}>Cliente</th>
+              <th scope="col" className={TH}>Titular</th>
+              <th scope="col" className={TH}>Tipo</th>
+              <th scope="col" className={TH}>Validade</th>
+              <th scope="col" className={TH}>Situação</th>
+              <th scope="col" className={TH}>Faixa</th>
               <th scope="col" className="px-4 py-2.5 text-right">
                 <span className="sr-only">Ações</span>
               </th>
@@ -94,25 +80,34 @@ export function PainelCertificados({
                 className="border-b border-grafite/10 transition-colors last:border-0 hover:bg-nevoa/70 motion-reduce:transition-none"
               >
                 <td className={`${CELULA} font-medium text-tinta`}>
-                  {certificado.razaoSocial}
+                  <button
+                    type="button"
+                    onClick={() => aoAbrirCliente(certificado.clienteId)}
+                    className="rounded text-left text-turquesa underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-turquesa"
+                  >
+                    {certificado.razaoSocial}
+                  </button>
+                </td>
+                <td className={`${CELULA} text-grafite`}>{certificado.titular}</td>
+                <td className={`${CELULA} text-grafite`}>
+                  {ROTULO_TIPO[certificado.tipo]}
                 </td>
                 <td className={`${CELULA} font-codigo text-xs tabular-nums text-grafite`}>
                   <time dateTime={dataParaInput(certificado.dataValidade)}>
                     {formatarDataUTC(certificado.dataValidade)}
                   </time>
                 </td>
-                <td className={`${CELULA} whitespace-nowrap tabular-nums text-grafite`}>
+                <td className={`${CELULA} whitespace-nowrap font-codigo text-xs tabular-nums text-grafite`}>
                   {textoDias(certificado.diasRestantes)}
                 </td>
                 <td className={CELULA}>
-                  <span className="font-texto text-xs font-medium text-grafite">
-                    {ROTULO_BUCKET[certificado.bucket]}
-                  </span>
+                  <SeloBucket bucket={certificado.bucket} />
                 </td>
                 <td className={`${CELULA} text-right`}>
                   <div className="flex items-center justify-end gap-4">
-                    <Link
-                      href={`/modulos/sc-20?editar=${certificado.id}`}
+                    <button
+                      type="button"
+                      onClick={() => aoEditar(certificado.id)}
                       className="inline-flex items-center gap-1 rounded font-texto text-xs font-medium text-turquesa underline-offset-2 transition-colors hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-turquesa motion-reduce:transition-none"
                     >
                       <svg
@@ -129,7 +124,7 @@ export function PainelCertificados({
                         <path d="M13.5 6.5l3 3" />
                       </svg>
                       Editar
-                    </Link>
+                    </button>
                     <BotaoRemover id={certificado.id} />
                   </div>
                 </td>

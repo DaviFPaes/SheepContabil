@@ -1,13 +1,13 @@
 "use client";
 
-import { removerCertificado } from "@/lib/certificados/acoes";
+import { desativarCertificado } from "@/lib/certificados/acoes";
 
 export function BotaoRemover({ id }: { id: string }) {
   return (
     <form
-      action={removerCertificado}
+      action={desativarCertificado}
       onSubmit={(evento) => {
-        if (!confirm("Remover este certificado?")) {
+        if (!confirm("Desativar este certificado? Ele sai do Kanban e da carteira ativa.")) {
           evento.preventDefault();
         }
       }}
@@ -29,7 +29,7 @@ export function BotaoRemover({ id }: { id: string }) {
         >
           <path d="M4 7h16M10 11v6M14 11v6M5 7l1 13h12l1-13M9 7V4h6v3" />
         </svg>
-        Remover
+        Desativar
       </button>
     </form>
   );

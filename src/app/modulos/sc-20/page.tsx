@@ -5,10 +5,17 @@ import { CabecalhoPortal } from "@/components/CabecalhoPortal";
 import { ModuloPageLayout } from "@/components/ModuloPageLayout";
 import { filtrarModulosVisiveis, obterModulo } from "@/lib/modulos-catalogo";
 import { listarHistorico as listarExecucoes } from "@/lib/execucao";
-import { listarCertificados } from "@/lib/certificados/consultas";
+import {
+  contarNaoAvisados,
+  listarCertificados,
+  montarColunasKanban,
+} from "@/lib/certificados/consultas";
 import { rodarAgora } from "@/lib/certificados/acoes";
-import { PainelCertificados } from "@/components/certificados/PainelCertificados";
+import { PainelSc20 } from "@/components/certificados/PainelSc20";
 import { BotaoRodarAgora } from "@/components/certificados/BotaoRodarAgora";
+
+type Visao = "tabela" | "kanban";
+type Foco = "D60" | "D7" | "D3" | null;
 
 function contar(qtd: number, singular: string, plural: string): string {
   return `${qtd} ${qtd === 1 ? singular : plural}`;
@@ -20,7 +27,11 @@ function contar(qtd: number, singular: string, plural: string): string {
 // sem o formulario inline (removido — vira ModalCertificado na Task 13),
 // sem a lista de avisos (removida — vira SinoAvisos + aba Historico nas
 // Tasks 16-18) e sem o Kanban/toggle/modal de perfil (Tasks 10-11-14-18).
-export default async function PaginaSc20() {
+export default async function PaginaSc20({
+  searchParams,
+}: {
+  searchParams: Promise<{ visao?: string; foco?: string }>;
+}) {
   const sessao = await obterSessao();
   if (!sessao) {
     redirect("/login");
@@ -36,10 +47,18 @@ export default async function PaginaSc20() {
     redirect("/");
   }
 
+  const { visao, foco } = await searchParams;
+  const visaoUrl: Visao | null = visao === "kanban" || visao === "tabela" ? visao : null;
+  const focoInicial: Foco =
+    foco === "D60" || foco === "D7" || foco === "D3" ? foco : null;
+
   const [execucoes, certificados] = await Promise.all([
     listarExecucoes("SC-20"),
     listarCertificados(),
   ]);
+
+  const colunas = montarColunasKanban(certificados);
+  const contagem = contarNaoAvisados(colunas);
 
   return (
     <>
@@ -82,10 +101,17 @@ export default async function PaginaSc20() {
                 ) : null}
               </div>
               <p className="mt-1 max-w-prose font-texto text-sm text-grafite">
-                Ordenados por validade, do mais urgente ao mais distante.
+                Tabela mostra tudo; o Kanban, só o que está a ≤ 60 dias,
+                vencido ou renovado há pouco.
               </p>
             </div>
-            <PainelCertificados certificados={certificados} />
+            <PainelSc20
+              certificados={certificados}
+              colunas={colunas}
+              contagem={contagem}
+              visaoUrl={visaoUrl}
+              focoInicial={focoInicial}
+            />
           </section>
         }
       />
