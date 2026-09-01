@@ -1,8 +1,12 @@
 import Link from "next/link";
-import type { CertificadoComStatus } from "@/lib/certificados/consultas";
+import type { CertificadoLinha } from "@/lib/certificados/consultas";
+import { ROTULO_BUCKET } from "@/lib/certificados/bucket";
 import { dataParaInput, formatarDataUTC } from "@/lib/certificados/formato";
-import { BadgeFaixa } from "./BadgeFaixa";
 import { BotaoRemover } from "./BotaoRemover";
+
+// NOTA (Task 12 do plano): este painel ainda usa um <span> cru para a
+// faixa e nao mostra Titular/Tipo — a Task 12 troca por <SeloBucket> (Task
+// 8) e adiciona as colunas, alem de abrir o modal de perfil no clique.
 
 function textoDias(dias: number): string {
   if (dias < 0) return `vencido há ${Math.abs(dias)} d`;
@@ -15,7 +19,7 @@ const CELULA = "px-4 py-3 align-middle";
 export function PainelCertificados({
   certificados,
 }: {
-  certificados: CertificadoComStatus[];
+  certificados: CertificadoLinha[];
 }) {
   if (certificados.length === 0) {
     return (
@@ -101,7 +105,9 @@ export function PainelCertificados({
                   {textoDias(certificado.diasRestantes)}
                 </td>
                 <td className={CELULA}>
-                  <BadgeFaixa faixa={certificado.faixa} />
+                  <span className="font-texto text-xs font-medium text-grafite">
+                    {ROTULO_BUCKET[certificado.bucket]}
+                  </span>
                 </td>
                 <td className={`${CELULA} text-right`}>
                   <div className="flex items-center justify-end gap-4">

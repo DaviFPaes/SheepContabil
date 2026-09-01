@@ -4,29 +4,23 @@ import { sair } from "@/lib/sessao-acoes";
 import { CabecalhoPortal } from "@/components/CabecalhoPortal";
 import { ModuloPageLayout } from "@/components/ModuloPageLayout";
 import { filtrarModulosVisiveis, obterModulo } from "@/lib/modulos-catalogo";
-import { listarHistorico } from "@/lib/execucao";
-import {
-  listarAvisos,
-  listarCertificadosComStatus,
-  listarClientesParaSelecao,
-} from "@/lib/certificados/consultas";
+import { listarHistorico as listarExecucoes } from "@/lib/execucao";
+import { listarCertificados } from "@/lib/certificados/consultas";
 import { rodarAgora } from "@/lib/certificados/acoes";
 import { PainelCertificados } from "@/components/certificados/PainelCertificados";
-import { FormularioCertificado } from "@/components/certificados/FormularioCertificado";
-import { ListaAvisos } from "@/components/certificados/ListaAvisos";
 import { BotaoRodarAgora } from "@/components/certificados/BotaoRodarAgora";
-
-const LIMITE_AVISOS = 50;
 
 function contar(qtd: number, singular: string, plural: string): string {
   return `${qtd} ${qtd === 1 ? singular : plural}`;
 }
 
-export default async function PaginaSc20({
-  searchParams,
-}: {
-  searchParams: Promise<{ editar?: string }>;
-}) {
+// NOTA (Tasks 12-13-16-17-18 do plano de implementacao — ver
+// docs/superpowers/plans/2026-09-01-sc-20-vencimento-certificado-etapa-1.md):
+// esta pagina esta temporariamente reduzida a tabela + botao Atualizar,
+// sem o formulario inline (removido — vira ModalCertificado na Task 13),
+// sem a lista de avisos (removida — vira SinoAvisos + aba Historico nas
+// Tasks 16-18) e sem o Kanban/toggle/modal de perfil (Tasks 10-11-14-18).
+export default async function PaginaSc20() {
   const sessao = await obterSessao();
   if (!sessao) {
     redirect("/login");
@@ -42,17 +36,10 @@ export default async function PaginaSc20({
     redirect("/");
   }
 
-  const { editar } = await searchParams;
-  const [execucoes, certificados, avisos, clientes] = await Promise.all([
-    listarHistorico("SC-20"),
-    listarCertificadosComStatus(),
-    listarAvisos(),
-    listarClientesParaSelecao(),
+  const [execucoes, certificados] = await Promise.all([
+    listarExecucoes("SC-20"),
+    listarCertificados(),
   ]);
-
-  const certificadoEmEdicao = editar
-    ? (certificados.find((c) => c.id === editar) ?? null)
-    : null;
 
   return (
     <>
@@ -76,87 +63,30 @@ export default async function PaginaSc20({
               <BotaoRodarAgora />
             </form>
             <p className="max-w-prose font-texto text-xs text-grafite">
-              Varre os certificados da carteira e emite avisos para os que já
-              estão vencidos ou vencem nos próximos 60 dias. Cada execução
-              aparece no histórico abaixo.
+              Reavalia o bucket de cada certificado e gera os avisos internos
+              das faixas que mudaram. Roda sozinho todo dia de madrugada.
             </p>
           </div>
         }
         conteudo={
-          <div className="flex flex-col gap-8">
-            <section>
-              <div className="mb-3">
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
-                  <h2 className="font-titulo text-lg font-bold text-tinta">
-                    {certificadoEmEdicao
-                      ? "Editar certificado"
-                      : "Novo certificado"}
-                  </h2>
-                  {certificadoEmEdicao ? (
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-ambar/15 px-2 py-0.5 font-texto text-xs font-medium leading-none text-ambar ring-1 ring-inset ring-ambar/35">
-                      <span
-                        aria-hidden="true"
-                        className="h-1.5 w-1.5 shrink-0 rounded-full bg-current"
-                      />
-                      Modo edição
-                    </span>
-                  ) : null}
-                </div>
-                <p className="mt-1 max-w-prose font-texto text-sm text-grafite">
-                  {certificadoEmEdicao
-                    ? `Ajustando o certificado de ${certificadoEmEdicao.razaoSocial}. As mudanças valem só para este registro.`
-                    : "Cadastre o certificado digital de um cliente para acompanhar o vencimento."}
-                </p>
+          <section>
+            <div className="mb-3">
+              <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1.5">
+                <h2 className="font-titulo text-lg font-bold text-tinta">
+                  Certificados da carteira
+                </h2>
+                {certificados.length > 0 ? (
+                  <span className="font-codigo text-xs tabular-nums text-grafite">
+                    {contar(certificados.length, "certificado", "certificados")}
+                  </span>
+                ) : null}
               </div>
-              <FormularioCertificado
-                key={certificadoEmEdicao?.id ?? "novo"}
-                clientes={clientes}
-                certificado={certificadoEmEdicao}
-              />
-            </section>
-
-            <section>
-              <div className="mb-3">
-                <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1.5">
-                  <h2 className="font-titulo text-lg font-bold text-tinta">
-                    Certificados da carteira
-                  </h2>
-                  {certificados.length > 0 ? (
-                    <span className="font-codigo text-xs tabular-nums text-grafite">
-                      {contar(certificados.length, "certificado", "certificados")}
-                    </span>
-                  ) : null}
-                </div>
-                <p className="mt-1 max-w-prose font-texto text-sm text-grafite">
-                  Ordenados por validade, do mais urgente ao mais distante. A
-                  faixa resume quanto tempo resta.
-                </p>
-              </div>
-              <PainelCertificados certificados={certificados} />
-            </section>
-
-            <section>
-              <div className="mb-3">
-                <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1.5">
-                  <h2 className="font-titulo text-lg font-bold text-tinta">
-                    Avisos emitidos
-                  </h2>
-                  {avisos.length > 0 ? (
-                    <span className="font-codigo text-xs tabular-nums text-grafite">
-                      {avisos.length === LIMITE_AVISOS
-                        ? "(últimos 50)"
-                        : contar(avisos.length, "aviso", "avisos")}
-                    </span>
-                  ) : null}
-                </div>
-                <p className="mt-1 max-w-prose font-texto text-sm text-grafite">
-                  Gerados a cada execução para os certificados dentro da janela de
-                  60 dias. Mais recentes no topo.
-                </p>
-              </div>
-              <ListaAvisos avisos={avisos} />
-            </section>
-          </div>
+              <p className="mt-1 max-w-prose font-texto text-sm text-grafite">
+                Ordenados por validade, do mais urgente ao mais distante.
+              </p>
+            </div>
+            <PainelCertificados certificados={certificados} />
+          </section>
         }
       />
     </>
