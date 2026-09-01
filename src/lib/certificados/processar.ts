@@ -1,30 +1,129 @@
 import { prisma } from "@/lib/prisma";
 import type { ResultadoExecucao } from "@/lib/execucao";
-import { diasRestantes } from "./faixa-urgencia";
+import {
+  calcularBucket,
+  diasRestantes,
+  transicaoGeraNotificacao,
+  type Bucket,
+} from "./bucket";
+import { ROTULO_BUCKET } from "./bucket";
 
-const JANELA_DIAS = 60;
+export type ContextoAtor = { autorId: string | null; autorEmail: string | null };
 
-// STUB temporario (Task 1 do plano de implementacao — ver
-// docs/superpowers/plans/2026-09-01-sc-20-vencimento-certificado-etapa-1.md).
-// A migracao sc20_kanban_avisos mudou o que AvisoCertificado representa (de
-// "faixa mudou" para "marco de e-mail"), entao o motor antigo nao compila
-// mais como estava. O motor real — recalcularBucketsCertificados, que grava
-// bucket + RegistroAuditoria + NotificacaoInApp — entra na Task 5. Ate la,
-// este stub so mantem o cron e o botao "Atualizar" funcionando sem erro.
-export async function processarAvisosCertificados(
+const CONTEXTO_SISTEMA: ContextoAtor = { autorId: null, autorEmail: null };
+
+// Quem enxerga o SC-20 (mesmo criterio de acesso ao modulo): ADMIN, ou
+// OPERADOR do setor Processos.
+async function listarUsuariosElegiveis() {
+  return prisma.usuario.findMany({
+    where: {
+      OR: [{ papel: "ADMIN" }, { AND: [{ papel: "OPERADOR" }, { setor: "Processos" }] }],
+    },
+    select: { id: true },
+  });
+}
+
+function inicioDoDiaUTC(data: Date): Date {
+  const d = new Date(data);
+  d.setUTCHours(0, 0, 0, 0);
+  return d;
+}
+
+export async function recalcularBucketsCertificados(
   hoje: Date = new Date(),
+  ator: ContextoAtor = CONTEXTO_SISTEMA,
 ): Promise<ResultadoExecucao> {
   const certificados = await prisma.certificado.findMany({
     where: { ativo: true },
+    include: { cliente: true },
     orderBy: { dataValidade: "asc" },
   });
 
-  const dentroDaJanela = certificados.filter(
-    (certificado) => diasRestantes(certificado.dataValidade, hoje) <= JANELA_DIAS,
-  ).length;
+  const usuariosElegiveis = await listarUsuariosElegiveis();
+  const inicioHoje = inicioDoDiaUTC(hoje);
+
+  let transicoes = 0;
+  let falhas = 0;
+
+  for (const certificado of certificados) {
+    try {
+      const dias = diasRestantes(certificado.dataValidade, hoje);
+      const bucketAtual = calcularBucket(dias, { renovado: false });
+      const bucketAnterior = certificado.bucket as Bucket;
+
+      if (bucketAtual === bucketAnterior) continue;
+
+      await prisma.certificado.update({
+        where: { id: certificado.id },
+        data: { bucket: bucketAtual },
+      });
+
+      await prisma.registroAuditoria.create({
+        data: {
+          entidade: "Certificado",
+          entidadeId: certificado.id,
+          acao: "TRANSICAO_BUCKET",
+          descricao: `Bucket de ${certificado.cliente.razaoSocial} (${certificado.tipo}): ${ROTULO_BUCKET[bucketAnterior]} → ${ROTULO_BUCKET[bucketAtual]}`,
+          autorId: ator.autorId,
+          autorEmail: ator.autorEmail,
+          clienteId: certificado.clienteId,
+          dadosAntes: { bucket: bucketAnterior },
+          dadosDepois: { bucket: bucketAtual },
+        },
+      });
+      transicoes += 1;
+
+      const tipoNotificacao = transicaoGeraNotificacao(bucketAnterior, bucketAtual);
+      if (tipoNotificacao) {
+        for (const usuario of usuariosElegiveis) {
+          const jaExiste = await prisma.notificacaoInApp.findFirst({
+            where: {
+              usuarioId: usuario.id,
+              certificadoId: certificado.id,
+              tipo: tipoNotificacao,
+              criadoEm: { gte: inicioHoje },
+            },
+          });
+          if (jaExiste) continue;
+
+          await prisma.notificacaoInApp.create({
+            data: {
+              usuarioId: usuario.id,
+              tipo: tipoNotificacao,
+              certificadoId: certificado.id,
+              clienteId: certificado.clienteId,
+            },
+          });
+        }
+      }
+    } catch (erro) {
+      // Processamento granular: falha num certificado nao aborta o lote —
+      // os demais continuam, a execucao termina como PARCIAL.
+      falhas += 1;
+      console.error(
+        `[recalcularBucketsCertificados] falha ao reavaliar o certificado ${certificado.id}:`,
+        erro,
+      );
+      continue;
+    }
+  }
+
+  const status: ResultadoExecucao["status"] = falhas > 0 ? "PARCIAL" : "SUCESSO";
+  const sufixoFalhas = falhas > 0 ? `; ${falhas} certificado(s) falharam` : "";
+
+  await prisma.registroAuditoria.create({
+    data: {
+      entidade: "Execucao",
+      entidadeId: "",
+      acao: "ATUALIZAR_EXECUTADO",
+      descricao: `${certificados.length} certificados reavaliados, ${transicoes} transições`,
+      autorId: ator.autorId,
+      autorEmail: ator.autorEmail,
+    },
+  });
 
   return {
-    status: "SUCESSO",
-    resumo: `${certificados.length} certificados ativos, ${dentroDaJanela} dentro da janela de 60 dias (motor completo chega na Task 5).`,
+    status,
+    resumo: `${certificados.length} certificados ativos avaliados, ${transicoes} transição(ões) de faixa${sufixoFalhas}.`,
   };
 }

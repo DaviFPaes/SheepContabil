@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cronAutorizado } from "@/lib/cron-logica";
 import { executarModulo } from "@/lib/execucao";
-import { processarAvisosCertificados } from "@/lib/certificados/processar";
+import { recalcularBucketsCertificados } from "@/lib/certificados/processar";
 
 export async function GET(request: NextRequest) {
   if (
@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     const execucao = await executarModulo(
       "SC-20",
       "scheduler",
-      processarAvisosCertificados,
+      () => recalcularBucketsCertificados(),
     );
 
     return NextResponse.json({

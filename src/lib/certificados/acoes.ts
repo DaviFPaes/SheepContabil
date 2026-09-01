@@ -7,7 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { obterSessao } from "@/lib/sessao-servidor";
 import { filtrarModulosVisiveis } from "@/lib/modulos-catalogo";
 import { executarModulo } from "@/lib/execucao";
-import { processarAvisosCertificados } from "./processar";
+import { recalcularBucketsCertificados } from "./processar";
 
 const ROTA = "/modulos/sc-20";
 
@@ -140,6 +140,11 @@ export async function removerCertificado(formData: FormData): Promise<void> {
 
 export async function rodarAgora(): Promise<void> {
   const sessao = await exigirAcessoSc20();
-  await executarModulo("SC-20", sessao.email, processarAvisosCertificados);
+  await executarModulo("SC-20", sessao.email, () =>
+    recalcularBucketsCertificados(new Date(), {
+      autorId: sessao.usuarioId,
+      autorEmail: sessao.email,
+    }),
+  );
   revalidatePath(ROTA);
 }
