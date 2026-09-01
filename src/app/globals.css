@@ -12,6 +12,36 @@
   --font-titulo: var(--font-archivo), "Archivo", sans-serif;
   --font-texto: var(--font-plex-sans), "IBM Plex Sans", sans-serif;
   --font-codigo: var(--font-plex-mono), "IBM Plex Mono", monospace;
+
+  --animate-entrada: entrada 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --animate-deriva-veu: deriva-veu 34s ease-in-out infinite alternate;
+
+  @keyframes entrada {
+    from {
+      opacity: 0;
+      transform: translateY(12px) scale(0.985);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  @keyframes deriva-veu {
+    from {
+      transform: translate3d(-3%, -2%, 0) scale(1.04);
+    }
+    to {
+      transform: translate3d(3%, 2%, 0) scale(1.12);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-entrada,
+  .animate-deriva-veu {
+    animation: none;
+  }
 }
 
 body {

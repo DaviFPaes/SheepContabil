@@ -1,18 +1,31 @@
 import { LogoSheep } from "@/components/LogoSheep";
+import { VeuAtmosferico } from "@/components/VeuAtmosferico";
 import { FormularioLogin } from "./FormularioLogin";
 
 export default function PaginaLogin() {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-tinta px-4">
-      <div className="w-full max-w-sm rounded-lg bg-nevoa p-8 shadow-lg">
-        <div className="mb-6 flex items-center justify-center gap-2">
-          <LogoSheep className="h-10 w-10 text-petroleo" />
-          <span className="font-titulo text-xl font-bold text-petroleo">
-            Sheep<span className="text-turquesa">Contabil</span>
-          </span>
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-tinta px-4 py-10">
+      <VeuAtmosferico />
+
+      <section className="animate-entrada relative z-10 w-full max-w-sm">
+        <div className="rounded-2xl border border-white/25 bg-nevoa/80 p-8 shadow-[0_24px_70px_-15px_rgba(11,26,32,0.65)] backdrop-blur-xl">
+          <div className="mb-7 flex flex-col items-center gap-2.5">
+            <div className="flex items-center gap-2.5">
+              <LogoSheep className="h-11 w-11 text-petroleo" />
+              <span className="font-titulo text-2xl font-extrabold tracking-tight text-petroleo">
+                Sheep<span className="text-turquesa">Contabil</span>
+              </span>
+            </div>
+            <p className="font-texto text-sm text-grafite">
+              Portal de automações contábeis
+            </p>
+          </div>
+          <FormularioLogin />
         </div>
-        <FormularioLogin />
-      </div>
+        <p className="mt-5 text-center font-texto text-xs text-nevoa/45">
+          Acesso restrito · SheepContabil
+        </p>
+      </section>
     </main>
   );
 }

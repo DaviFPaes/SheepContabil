@@ -14,18 +14,20 @@ export function CabecalhoPortal({
   acaoSair,
 }: CabecalhoPortalProps) {
   return (
-    <header className="flex items-center justify-between bg-petroleo px-6 py-4 text-nevoa">
+    <header className="sticky top-0 z-20 flex items-center justify-between border-b border-turquesa/25 bg-petroleo/95 px-6 py-3.5 text-nevoa backdrop-blur-md">
       <div className="flex items-center gap-3">
-        <LogoSheep className="h-8 w-8 text-turquesa" />
+        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-tinta/70 ring-1 ring-white/10">
+          <LogoSheep className="h-6 w-6 text-turquesa" />
+        </span>
         <span
           data-testid="marca-sheepcontabil"
-          className="font-titulo text-lg font-bold"
+          className="font-titulo text-lg font-extrabold tracking-tight"
         >
           Sheep<span className="text-turquesa">Contabil</span>
         </span>
       </div>
-      <div className="flex items-center gap-4 font-texto text-sm">
-        <span>
+      <div className="flex items-center gap-4 font-texto text-sm text-nevoa/85">
+        <span className="hidden sm:inline">
           {nomeUsuario} · {papel === "ADMIN" ? "Administrador" : "Operador"}
         </span>
         {acaoSair}

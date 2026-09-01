@@ -1,0 +1,104 @@
+/* Camada de efeito dos cards de módulo — funde a borda direcional do BorderGlow
+   com o spotlight/partículas/ripple do MagicBento (React Bits), travado na
+   paleta da marca: brilho turquesa, gleam da borda em turquesa → petróleo →
+   âmbar. Tudo "contido": amplitudes baixas, sobre card claro de vidro. */
+
+.cartao-modulo {
+  --prox: 0; /* proximidade do cursor à borda, por dentro (0–1) */
+  --spot: 0; /* proximidade do cursor ao card, pelo spotlight global (0–1) */
+  --ang: 90deg; /* ângulo do cursor, para o gleam direcional */
+  --glow: 31 166 154; /* turquesa, sem wrapper rgb() */
+  --glow-eff: max(var(--prox), var(--spot));
+  isolation: isolate;
+}
+
+/* Gleam direcional na borda */
+.cartao-modulo__borda {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: conic-gradient(
+    from var(--ang),
+    transparent 0deg,
+    rgb(var(--glow)) 42deg,
+    #10505f 92deg,
+    #e8a33d 150deg,
+    transparent 210deg,
+    transparent 360deg
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  opacity: calc(var(--glow-eff) * 0.9);
+  transition: opacity 0.35s ease;
+  pointer-events: none;
+}
+
+/* Halo externo — anel + difusão que acompanham a proximidade */
+.cartao-modulo__halo {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow:
+    0 0 0 1px rgb(var(--glow) / calc(var(--glow-eff) * 0.35)),
+    0 10px 44px -8px rgb(var(--glow) / calc(var(--glow-eff) * 0.5));
+  transition: box-shadow 0.35s ease;
+}
+
+/* Camada que recorta as partículas dentro do card */
+.cartao-modulo__clip {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.cartao-modulo__particula {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgb(var(--glow) / 0.9);
+  box-shadow: 0 0 6px rgb(var(--glow) / 0.55);
+  pointer-events: none;
+}
+
+/* Spotlight global que segue o cursor pela grade */
+.grade-modulos__spot {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 520px;
+  height: 520px;
+  margin: -260px 0 0 -260px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 3;
+  opacity: 0;
+  background: radial-gradient(
+    circle,
+    rgb(31 166 154 / 0.16) 0%,
+    rgb(31 166 154 / 0.08) 32%,
+    transparent 68%
+  );
+  mix-blend-mode: screen;
+  will-change: transform, opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cartao-modulo__borda,
+  .cartao-modulo__halo {
+    transition: none;
+  }
+}
