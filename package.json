@@ -11,6 +11,7 @@
     "test:watch": "vitest",
     "fixtures": "tsx prisma/fixtures/gerar-fixtures.ts",
     "fixtures:nfse": "tsx prisma/fixtures/gerar-fixtures-nfse.ts",
+    "seed:sc20:reset": "tsx prisma/seed-sc20-reset.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {

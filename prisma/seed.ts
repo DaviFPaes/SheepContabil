@@ -4,6 +4,7 @@ import { PrismaClient } from "../src/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { hashSenha } from "../src/lib/senha";
 import { gerarCnpjValido } from "../src/lib/cnpj";
+import { seedSc20 } from "./seed-sc20";
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
@@ -301,6 +302,7 @@ async function main() {
   await seedContasBancarias();
   await seedDocumentosEntrada();
   await seedCertificados();
+  await seedSc20(prisma);
 }
 
 main()

@@ -58,23 +58,30 @@ Mudança de env var na Vercel só passa a valer no **próximo deploy** (Redeploy
 
 ## Módulos
 
-### SC-20 — Vencimento de certificado digital
+### SC-20 — Vencimento de certificado digital (Etapa 1)
 
-Painel dos certificados digitais da carteira, classificados por faixa de urgência de vencimento:
+Fila de trabalho dos certificados digitais da carteira. Cada certificado tem um **bucket** de proximidade do vencimento, recalculado todo dia:
 
-| Faixa | Dias para vencer |
-|---|---|
-| `VENCIDO` | já venceu |
-| `CRÍTICO` | 0 a 7 |
-| `ALERTA` | 8 a 30 |
-| `PRÓXIMO` | 31 a 60 |
-| `OK` | mais de 60 (sem aviso) |
+| Bucket | Dias para vencer | Aparece no Kanban |
+|---|---|---|
+| `OK` | mais de 60 | não |
+| `D60` | 8 a 60 | sim |
+| `D7` | 4 a 7 | sim |
+| `D3` | 0 a 3 | sim |
+| `VENCIDO` | já venceu | sim |
+| `RENOVADO` | tem substituto | sim, por 7 dias após a renovação |
 
-Ao rodar (botão **Rodar agora** ou cron mensal `/api/cron/sc-20`, dia 1 às 08:00 UTC), o módulo varre os certificados **já vencidos ou a até 60 dias de vencer** e cria um `AvisoCertificado` — com o texto pronto da mensagem — **só quando a faixa mudou** desde o último aviso daquele certificado. Isso evita repetir a lista inteira todo mês.
+**Tabela ↔ Kanban** (toggle acima da tabela, preferência salva por usuário no `localStorage`). A tabela lista tudo; o Kanban tem 7 colunas derivadas dos dados — sem arrastar cards, a posição vem do bucket e dos avisos. Clique num card abre o **perfil do cliente** num modal (dados, certificados e histórico filtrado), sem sair da aba.
 
-CRUD de certificados na própria página (cliente + data de validade). Visível para o `ADMIN` e para operadores do setor **Processos**.
+O **cron diário** `/api/cron/sc-20` (05:00 `America/Sao_Paulo` = 08:00 UTC) e o botão **Atualizar** rodam a mesma rotina: recalculam o bucket de cada certificado ativo, gravam um `RegistroAuditoria` a cada **transição** e criam uma `NotificacaoInApp` para cada usuário que enxerga o módulo (ADMIN ou OPERADOR de **Processos**) quando um certificado **entra** numa faixa mais urgente. Idempotente no dia — rodar várias vezes não duplica aviso. O **sino** no cabeçalho agrupa os avisos por tipo + dia e leva ao Kanban na coluna certa.
 
-Fronteira mockada: o `AvisoCertificado` guarda a mensagem, mas **não há envio real** — aqui entraria a integração com e-mail / sistema de avisos. A rota de cron é protegida por `CRON_SECRET` no header `Authorization: Bearer`.
+**Novo certificado** é um botão → modal (cliente, tipo `e-CNPJ`/`e-CPF`/`NF-e`, titular, emissão, validade, observação). O checkbox *"é renovação"* vincula o certificado anterior, desativa-o e o move para `RENOVADO` num único passo, auditado nas duas pontas.
+
+Aba **Histórico**: timeline de auditoria com filtros (cliente, evento, período), paginação e **exportação CSV** (`/modulos/sc-20/historico/relatorio`, respeita os filtros).
+
+**Envio de e-mail ao cliente é só interface nesta etapa** — o botão *"Enviar avisos"* e o modal de confirmação existem, mas confirmar não dispara nada (aviso *"não disponível nesta etapa"*). As colunas *"Avisado"* e o ícone de bounce são alimentados pelo seed. A fila real de envio (`EnviadorEmail`, status, webhook de bounce, movimentação automática do card) fica para a Etapa 2.
+
+**Seed:** `npm run seed:sc20:reset` recria só a carteira sintética do SC-20 (60 clientes `@example.com`, ~100 certificados cobrindo as 7 colunas, metade de `D60`/`D7` já avisada com 5 bounces, ~6 meses de auditoria, notificações não lidas). É idempotente. `prisma migrate reset` aplica as migrações e chama o seed completo (que inclui `seedSc20`).
 
 ### SC-01 — Conversão de extrato bancário para OFX
 
@@ -117,7 +124,8 @@ Fixtures de demonstração em `prisma/fixtures/` (`nfse-pequena/media/grande.xml
 - NFS-e (SC-11) chega em XML.
 - "Sistema de tarefas" e "sistema contábil" citados no catálogo do desafio são inteiramente mockados dentro deste portal — não há integração externa real em nenhum dos 4 módulos escolhidos.
 - O papel `OPERADOR` do seed está vinculado a um único setor, para demonstrar a segregação de visão.
-- SC-20 calcula `diasRestantes` e as faixas contra o "hoje" em **UTC**. No fuso de São Paulo (UTC-3), entre ~21:00 e a meia-noite um certificado pode ser classificado numa faixa um dia mais urgente do que o calendário local indicaria — aceitável para um aviso mensal.
+- SC-20 calcula `diasRestantes` e os buckets contra o "hoje" em **UTC**. No fuso de São Paulo (UTC-3), entre ~21:00 e a meia-noite um certificado pode ser classificado num bucket um dia mais urgente do que o calendário local indicaria — aceitável para um recálculo diário.
+- SC-20 Etapa 1: o envio transacional de e-mail ao cliente entra só como interface (sem lógica) por decisão do cliente do módulo; o certificado "renovado" some do Kanban 7 dias após a renovação; o `RegistroAuditoria` é um modelo genérico usado só pelo SC-20 nesta etapa.
 
 ## Onde entraria o acesso real
 
