@@ -14,6 +14,7 @@ export type CertificadoLinha = {
   id: string;
   clienteId: string;
   razaoSocial: string;
+  clienteEmail: string;
   titular: string;
   tipo: TipoCertificado;
   dataValidade: Date;
@@ -49,6 +50,7 @@ export async function listarCertificados(hoje: Date = new Date()): Promise<Certi
       id: certificado.id,
       clienteId: certificado.clienteId,
       razaoSocial: certificado.cliente.razaoSocial,
+      clienteEmail: certificado.cliente.email,
       titular: certificado.titular,
       tipo: certificado.tipo,
       dataValidade: certificado.dataValidade,

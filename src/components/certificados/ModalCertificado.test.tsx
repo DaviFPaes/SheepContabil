@@ -59,6 +59,7 @@ describe("ModalCertificado", () => {
       id: "c9",
       clienteId: "cl2",
       razaoSocial: "Beta Ltda",
+      clienteEmail: "beta@example.com",
       titular: "Beta Titular",
       tipo: "ECPF",
       dataValidade: new Date("2027-01-01T00:00:00Z"),

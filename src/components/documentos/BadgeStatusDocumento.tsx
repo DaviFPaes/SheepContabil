@@ -8,7 +8,7 @@ const ROTULO: Record<StatusDocumento, string> = {
   ERRO: "Erro",
 };
 
-// Mesmo idioma do BadgeFaixa (SC-20): fundo suave + texto no tom + anel
+// Mesmo idioma do SeloBucket (SC-20): fundo suave + texto no tom + anel
 // interno. So tokens da paleta. Ambar = ainda na fila; turquesa = pronto;
 // carmim = falhou.
 const CLASSE: Record<StatusDocumento, string> = {

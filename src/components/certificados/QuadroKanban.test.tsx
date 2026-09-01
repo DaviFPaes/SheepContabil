@@ -20,6 +20,7 @@ function linha(over: Partial<CertificadoLinha> = {}): CertificadoLinha {
     id: "c1",
     clienteId: "cl1",
     razaoSocial: "Alfa Ltda",
+    clienteEmail: "alfa@example.com",
     titular: "Titular Alfa",
     tipo: "ECNPJ",
     dataValidade: new Date("2026-09-20T00:00:00Z"),

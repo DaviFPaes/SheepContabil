@@ -2,7 +2,7 @@
 
 import { useFormStatus } from "react-dom";
 
-// Mesmo motivo do BotaoRodarAgora (SC-20): fica DENTRO do <form action={acao}>
+// Mesmo motivo do BotaoAtualizar (SC-20): fica DENTRO do <form action={acao}>
 // so para ler o status de envio e, enquanto `pending`, desabilitar + trocar o
 // rotulo — evita o duplo clique que dispararia duas execucoes sobrepostas.
 // Serve tanto para "processar pendentes" (sem documentoId) quanto para o

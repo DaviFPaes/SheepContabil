@@ -2,11 +2,11 @@
 
 import { useFormStatus } from "react-dom";
 
-// Fica dentro do <form action={rodarAgora}> (server-side) so para poder ler
+// Fica dentro do <form action={atualizarAgora}> (server-side) so para ler
 // o status de envio: enquanto `pending`, o botao se desabilita e troca o
-// rotulo, evitando o duplo clique que dispararia duas execucoes sobrepostas
-// e gravaria avisos duplicados.
-export function BotaoRodarAgora() {
+// rotulo, evitando o duplo clique que dispararia duas execucoes
+// sobrepostas.
+export function BotaoAtualizar() {
   const { pending } = useFormStatus();
 
   return (
@@ -26,9 +26,10 @@ export function BotaoRodarAgora() {
         strokeLinejoin="round"
         className="h-4 w-4"
       >
-        <path d="M7 4.5v15l12-7.5z" />
+        <path d="M3 12a9 9 0 0 1 15-6.7L21 8M21 3v5h-5" />
+        <path d="M21 12a9 9 0 0 1-15 6.7L3 16M3 21v-5h5" />
       </svg>
-      {pending ? "Rodando…" : "Rodar agora"}
+      {pending ? "Atualizando…" : "Atualizar"}
     </button>
   );
 }
