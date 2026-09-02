@@ -85,9 +85,13 @@ Aba **Histórico**: timeline de auditoria com filtros (cliente, evento, período
 
 ### SC-01 — Conversão de extrato bancário para OFX
 
-Caixa de entrada de documentos (`DocumentoEntrada`, compartilhada com o SC-11). O operador sobe um extrato em **PDF ou foto** (JPG/PNG) para um cliente + conta bancária; o botão **Processar pendentes** (ou o cron mensal `/api/cron/sc-01`, dia 2 às 08:00 UTC) manda cada documento para a **API multimodal da Anthropic** (`claude-opus-5`, sem OCR separado), que devolve os lançamentos `{data, histórico, valor}` com **confiança por linha**.
+Caixa de entrada de documentos (`DocumentoEntrada`, compartilhada com o SC-11), acessada por um **modal multi-bloco** ("Enviar extratos"). O operador anexa um ou mais arquivos em **PDF ou foto** (JPG/PNG) e, ao anexar cada um, a IA lê o cabeçalho e **pré-preenche cliente e banco** (ambos editáveis). O envio cria N documentos de uma vez.
 
-Linhas com confiança `< 0.85` entram numa **fila de conferência** — com o trecho original ao lado — e precisam ser confirmadas (ou corrigidas) manualmente. **O download do OFX só libera quando não há mais nenhuma linha em conferência.** O arquivo gerado é **OFX 1.0.2 (SGML)**, formato que os softwares contábeis brasileiros importam.
+Leitura é **automática**: assim que o documento entra, a extração roda sozinha (via `after()` do Next, com fallback direto). Não há botão de lote. A **API multimodal da Anthropic** (`claude-opus-5`, sem OCR separado) devolve os lançamentos `{data, histórico, valor}` com **confiança por linha**. O cron diário `/api/cron/sc-01` (08:00 UTC) serve só de **rede de segurança** para o que não processou sozinho.
+
+**Régua de confiança: 100%** — só `confiança = 1` confirma a linha automaticamente; qualquer coisa abaixo entra numa **fila de conferência** — com o trecho original ao lado — e precisa ser confirmada (ou corrigida) manualmente. Não há distinção por formato (PDF ou foto passam pela mesma régua). **O download do OFX só libera quando não há mais nenhuma linha em conferência.** O arquivo gerado é **OFX 1.0.2 (SGML)**, formato que os softwares contábeis brasileiros importam.
+
+A tela do módulo tem duas **abas**: **Documentos** (caixa de entrada, com busca/filtro/ordenação e arquivo original clicável) e **Auditoria** (trilha de eventos — envio, leitura, conferência, download do OFX — filtrável e exportável em CSV). A tela de detalhe de cada documento mostra o **arquivo original ao lado dos lançamentos lidos**, facilitando a conferência contra o extrato de verdade.
 
 Processamento é **granular por documento**: se um extrato falha (ilegível, IA fora do ar), só ele vira `ERRO`; os outros do lote seguem.
 
