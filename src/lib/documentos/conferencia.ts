@@ -1,4 +1,4 @@
-export const LIMIAR_CONFIANCA = 0.85;
+export const LIMIAR_CONFIANCA = 1;
 
 export type StatusConferencia = "CONFIRMADO" | "PENDENTE_REVISAO";
 

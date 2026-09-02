@@ -29,9 +29,8 @@ export function formatarConfianca(confianca: number): string {
   return `${Math.round(confianca * 100)}%`;
 }
 
-// Faixa de cor da confianca. O corte de cima e o mesmo LIMIAR_CONFIANCA que
-// decide CONFIRMADO x PENDENTE_REVISAO — uma unica fonte para o numero. O 0.6
-// e so o degrau visual do meio. Devolve a classe utilitaria pronta.
+// Faixa de cor da confianca. O corte de cima é `LIMIAR_CONFIANCA` (agora 1)
+// — só 100% pinta de turquesa; `0.6` é o degrau visual do meio. Devolve a classe utilitaria pronta.
 export function tomConfianca(
   confianca: number,
 ): "text-turquesa" | "text-ambar" | "text-carmim" {

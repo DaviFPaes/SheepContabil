@@ -7,12 +7,14 @@ import {
 } from "./conferencia";
 
 describe("classificarLancamento", () => {
-  it("abaixo do limiar vai para revisao", () => {
-    expect(classificarLancamento(0.84)).toBe("PENDENTE_REVISAO");
+  it("abaixo de 100% vai para revisao", () => {
+    expect(classificarLancamento(0.999)).toBe("PENDENTE_REVISAO");
+    expect(classificarLancamento(0.85)).toBe("PENDENTE_REVISAO");
+    expect(classificarLancamento(0)).toBe("PENDENTE_REVISAO");
   });
-  it("no limiar ou acima e confirmado", () => {
+  it("exatamente 100% e confirmado", () => {
+    expect(classificarLancamento(1)).toBe("CONFIRMADO");
     expect(classificarLancamento(LIMIAR_CONFIANCA)).toBe("CONFIRMADO");
-    expect(classificarLancamento(0.99)).toBe("CONFIRMADO");
   });
 });
 

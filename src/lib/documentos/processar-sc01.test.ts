@@ -62,7 +62,7 @@ async function docTeste(nome: string, conteudo = "fake-pdf-bytes") {
 }
 
 const LINHAS_OK: LinhaExtraida[] = [
-  { data: "2026-08-03", historico: "PAG A", valor: -10, confianca: 0.95 },
+  { data: "2026-08-03", historico: "PAG A", valor: -10, confianca: 1 },
   { data: "2026-08-05", historico: "REC B", valor: 200, confianca: 0.6 }, // baixa confiança
 ];
 
