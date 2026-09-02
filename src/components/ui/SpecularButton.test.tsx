@@ -10,7 +10,7 @@ afterEach(cleanup);
 
 describe("SpecularButton — brilho contido", () => {
   it("o CSS prende o brilho no botão e não usa máscara de anel", () => {
-    expect(css).toMatch(/\.sb\s*{[^}]*overflow:\s*hidden/s);
+    expect(css).toMatch(/\.sb\s*{[^}]*overflow:\s*hidden/);
     expect(css).not.toMatch(/mask-composite/);
     expect(css).not.toMatch(/inset:\s*calc\(-1 \* var\(--sb-bleed\)\)/);
   });
