@@ -7,6 +7,7 @@ import { GradeModulos } from "@/components/modulos/GradeModulos";
 import { VeuAtmosferico } from "@/components/VeuAtmosferico";
 import { filtrarModulosVisiveis } from "@/lib/modulos-catalogo";
 import { obterKpiModulo } from "@/lib/home/kpis-modulos";
+import { obterPermissoesUsuario } from "@/lib/permissoes/consultas";
 
 const DIA_MS = 24 * 60 * 60 * 1000;
 
@@ -55,7 +56,9 @@ export default async function PaginaHome() {
     redirect("/login");
   }
 
-  const modulos = filtrarModulosVisiveis(sessao.papel, sessao.setor);
+  const permissoes =
+    sessao.papel === "OPERADOR" ? await obterPermissoesUsuario(sessao.usuarioId) : undefined;
+  const modulos = filtrarModulosVisiveis(sessao.papel, sessao.setor, undefined, permissoes);
   const codigos = modulos.map((modulo) => modulo.codigo);
   const agora = new Date();
   const desde30Dias = new Date(agora.getTime() - 30 * DIA_MS);
