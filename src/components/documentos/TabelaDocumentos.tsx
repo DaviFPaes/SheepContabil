@@ -1,11 +1,49 @@
 import Link from "next/link";
 import type { DocumentoResumo } from "@/lib/documentos/consultas-sc01";
+import type { OrdenacaoDocumento } from "@/lib/documentos/filtros-documentos";
 import { formatarDataUTC } from "@/lib/documentos/formato-documentos";
 import { BadgeStatusDocumento } from "./BadgeStatusDocumento";
+
+type ColunaOrdenavel = "cliente" | "chegada" | "status" | "linhas";
 
 const CELULA = "px-4 py-3 align-middle";
 const TH =
   "px-4 py-2.5 font-texto text-xs font-semibold uppercase tracking-wide text-grafite";
+
+function Cabecalho({
+  rotulo,
+  coluna,
+  ordenacao,
+  aoOrdenar,
+  className = "",
+}: {
+  rotulo: string;
+  coluna: ColunaOrdenavel;
+  ordenacao: OrdenacaoDocumento;
+  aoOrdenar: (coluna: ColunaOrdenavel) => void;
+  className?: string;
+}) {
+  const asc = ordenacao === `${coluna}-asc`;
+  const desc = ordenacao === `${coluna}-desc`;
+  const ativo = asc || desc;
+  return (
+    <th scope="col" className={`${TH} ${className}`}>
+      <button
+        type="button"
+        onClick={() => aoOrdenar(coluna)}
+        className="inline-flex items-center gap-1 rounded font-semibold uppercase tracking-wide transition-colors hover:text-tinta focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-petroleo motion-reduce:transition-none"
+      >
+        {rotulo}
+        <span
+          aria-hidden="true"
+          className={`text-[0.7em] leading-none ${ativo ? "text-petroleo" : "text-grafite/35"}`}
+        >
+          {desc ? "▼" : "▲"}
+        </span>
+      </button>
+    </th>
+  );
+}
 
 function ColunaLinhas({ documento }: { documento: DocumentoResumo }) {
   if (documento.status !== "PROCESSADO" || documento.totalLancamentos === 0) {
@@ -31,8 +69,12 @@ function ColunaLinhas({ documento }: { documento: DocumentoResumo }) {
 
 export function TabelaDocumentos({
   documentos,
+  ordenacao,
+  aoOrdenar,
 }: {
   documentos: DocumentoResumo[];
+  ordenacao: OrdenacaoDocumento;
+  aoOrdenar: (coluna: "cliente" | "chegada" | "status" | "linhas") => void;
 }) {
   if (documentos.length === 0) {
     return (
@@ -53,9 +95,6 @@ export function TabelaDocumentos({
         <p className="font-titulo text-sm font-bold text-tinta">
           Nenhum documento na caixa de entrada
         </p>
-        <p className="max-w-sm font-texto text-sm text-grafite">
-          Envie um extrato pelo formulário acima para começar a fila de leitura.
-        </p>
       </div>
     );
   }
@@ -65,25 +104,40 @@ export function TabelaDocumentos({
       <div className="overflow-x-auto">
         <table className="w-full border-collapse font-texto text-sm">
           <caption className="sr-only">
-            Documentos recebidos, do mais recente ao mais antigo
+            Documentos recebidos, filtráveis e ordenáveis por coluna
           </caption>
           <thead>
             <tr className="border-b border-grafite/20 bg-nevoa/60 text-left">
-              <th scope="col" className={TH}>
-                Cliente
-              </th>
+              <Cabecalho
+                rotulo="Cliente"
+                coluna="cliente"
+                ordenacao={ordenacao}
+                aoOrdenar={aoOrdenar}
+              />
               <th scope="col" className={TH}>
                 Arquivo
               </th>
               <th scope="col" className={TH}>
-                Chegada
+                Banco
               </th>
-              <th scope="col" className={TH}>
-                Status
-              </th>
-              <th scope="col" className={TH}>
-                Linhas
-              </th>
+              <Cabecalho
+                rotulo="Chegada"
+                coluna="chegada"
+                ordenacao={ordenacao}
+                aoOrdenar={aoOrdenar}
+              />
+              <Cabecalho
+                rotulo="Status"
+                coluna="status"
+                ordenacao={ordenacao}
+                aoOrdenar={aoOrdenar}
+              />
+              <Cabecalho
+                rotulo="Linhas"
+                coluna="linhas"
+                ordenacao={ordenacao}
+                aoOrdenar={aoOrdenar}
+              />
               <th scope="col" className="px-4 py-2.5 text-right">
                 <span className="sr-only">Ações</span>
               </th>
@@ -99,12 +153,33 @@ export function TabelaDocumentos({
                   {documento.clienteRazaoSocial}
                 </td>
                 <td className={CELULA}>
-                  <span
-                    className="block max-w-xs truncate font-codigo text-xs text-grafite"
+                  <a
+                    href={`/modulos/sc-01/documento/${documento.id}/arquivo`}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     title={documento.nomeArquivo}
+                    className="inline-flex max-w-xs items-center gap-1 rounded font-codigo text-xs text-turquesa underline-offset-2 transition-colors hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-turquesa motion-reduce:transition-none"
                   >
-                    {documento.nomeArquivo}
-                  </span>
+                    <span className="truncate">{documento.nomeArquivo}</span>
+                    <svg
+                      aria-hidden="true"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={1.75}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="h-3 w-3 shrink-0"
+                    >
+                      <path d="M7 17 17 7" />
+                      <path d="M9 7h8v8" />
+                    </svg>
+                  </a>
+                </td>
+                <td
+                  className={`${CELULA} font-codigo text-xs text-grafite`}
+                >
+                  {documento.bancoRotulo ?? "—"}
                 </td>
                 <td
                   className={`${CELULA} whitespace-nowrap font-codigo text-xs tabular-nums text-grafite`}
