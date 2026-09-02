@@ -3,6 +3,7 @@ import { obterSessao } from "@/lib/sessao-servidor";
 import { filtrarModulosVisiveis } from "@/lib/modulos-catalogo";
 import { obterDocumentoComLancamentos } from "@/lib/documentos/consultas-sc01";
 import { gerarOfx } from "@/lib/documentos/ofx";
+import { prisma } from "@/lib/prisma";
 
 function slug(texto: string): string {
   return texto
@@ -54,6 +55,18 @@ export async function GET(
       valor: l.valor,
     })),
   );
+
+  await prisma.registroAuditoria.create({
+    data: {
+      entidade: "DocumentoEntrada",
+      entidadeId: documentoId,
+      acao: "OFX_BAIXADO",
+      descricao: `OFX de ${doc.cliente.razaoSocial} baixado`,
+      autorId: sessao.usuarioId,
+      autorEmail: sessao.email,
+      clienteId: doc.cliente.id,
+    },
+  });
 
   const nome = `extrato-${slug(doc.cliente.razaoSocial)}-${documentoId.slice(0, 6)}.ofx`;
   return new NextResponse(ofx, {
