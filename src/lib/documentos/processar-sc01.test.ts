@@ -13,6 +13,26 @@ import { processarDocumento, processarExtratos } from "./processar-sc01";
 const MARCADOR = "sc01-teste";
 
 afterEach(async () => {
+  // RegistroAuditoria nao tem FK para DocumentoEntrada (entidade/entidadeId e
+  // uma referencia solta), entao junta os ids dos docs deste teste + os do seed
+  // que o sweep global de processarExtratos pode ter tocado, e apaga as linhas
+  // de auditoria por entidadeId antes de remover os docs.
+  const docsParaLimpar = await prisma.documentoEntrada.findMany({
+    where: {
+      OR: [
+        { nomeArquivo: { startsWith: MARCADOR } },
+        { nomeArquivo: { startsWith: "extrato-" } },
+      ],
+    },
+    select: { id: true },
+  });
+  await prisma.registroAuditoria.deleteMany({
+    where: {
+      entidade: "DocumentoEntrada",
+      entidadeId: { in: docsParaLimpar.map((d) => d.id) },
+    },
+  });
+
   await prisma.lancamento.deleteMany({
     where: { documentoEntrada: { nomeArquivo: { startsWith: MARCADOR } } },
   });
@@ -61,6 +81,11 @@ async function docTeste(nome: string, conteudo = "fake-pdf-bytes") {
   });
 }
 
+async function cenarioPendente(nome = "pendente") {
+  const doc = await docTeste(nome);
+  return { docId: doc.id, clienteId: doc.clienteId };
+}
+
 const LINHAS_OK: LinhaExtraida[] = [
   { data: "2026-08-03", historico: "PAG A", valor: -10, confianca: 1 },
   { data: "2026-08-05", historico: "REC B", valor: 200, confianca: 0.6 }, // baixa confiança
@@ -107,6 +132,60 @@ describe("processarDocumento", () => {
     expect(
       await prisma.lancamento.count({ where: { documentoEntradaId: doc.id } }),
     ).toBe(2);
+  });
+
+  it("grava periodoInicio/Fim/competencia do resultado da extração", async () => {
+    const { docId } = await cenarioPendente();
+    await processarDocumento(
+      docId,
+      criarExtratorFake(
+        [{ data: "2026-08-03", historico: "TED", valor: 100, confianca: 1 }],
+        { inicio: "2026-08-01", fim: "2026-08-31" },
+      ),
+    );
+    const doc = await prisma.documentoEntrada.findUniqueOrThrow({
+      where: { id: docId },
+    });
+    expect(doc.periodoInicio?.toISOString()).toBe("2026-08-01T00:00:00.000Z");
+    expect(doc.periodoFim?.toISOString()).toBe("2026-08-31T00:00:00.000Z");
+    expect(doc.competencia).toBe("2026-08");
+  });
+
+  it("registra LEITURA_CONCLUIDA na auditoria", async () => {
+    const { docId, clienteId } = await cenarioPendente();
+    await processarDocumento(
+      docId,
+      criarExtratorFake([
+        { data: "2026-08-03", historico: "TED", valor: 100, confianca: 0.5 },
+      ]),
+    );
+    const reg = await prisma.registroAuditoria.findFirst({
+      where: {
+        entidade: "DocumentoEntrada",
+        entidadeId: docId,
+        acao: "LEITURA_CONCLUIDA",
+      },
+    });
+    expect(reg).not.toBeNull();
+    expect(reg?.clienteId).toBe(clienteId);
+    expect(reg?.autorEmail).toBeNull();
+    expect(reg?.descricao).toContain("1 em conferência");
+  });
+
+  it("registra LEITURA_FALHOU quando o extrator lança", async () => {
+    const { docId } = await cenarioPendente();
+    const quebrado = async () => {
+      throw new Error("arquivo ilegível");
+    };
+    await processarDocumento(docId, quebrado);
+    const reg = await prisma.registroAuditoria.findFirst({
+      where: {
+        entidade: "DocumentoEntrada",
+        entidadeId: docId,
+        acao: "LEITURA_FALHOU",
+      },
+    });
+    expect(reg?.descricao).toContain("ilegível");
   });
 });
 

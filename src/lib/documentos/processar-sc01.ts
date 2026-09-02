@@ -13,6 +13,11 @@ function mensagemDeErro(erro: unknown): string {
   return "Falha inesperada ao processar o documento.";
 }
 
+export function derivarCompetencia(iso: string | null, fallback: Date): string {
+  if (iso && /^\d{4}-\d{2}-\d{2}$/.test(iso)) return iso.slice(0, 7);
+  return `${fallback.getUTCFullYear()}-${String(fallback.getUTCMonth() + 1).padStart(2, "0")}`;
+}
+
 export async function processarDocumento(
   documentoId: string,
   extrator: ExtratorExtrato = extrairExtratoComClaude,
@@ -42,15 +47,59 @@ export async function processarDocumento(
           },
         });
       }
+      const emRevisao = resultado.linhas.filter(
+        (l) => classificarLancamento(l.confianca) === "PENDENTE_REVISAO",
+      ).length;
+
       await tx.documentoEntrada.update({
         where: { id: doc.id },
-        data: { status: "PROCESSADO", processadoEm: new Date(), erro: null },
+        data: {
+          status: "PROCESSADO",
+          processadoEm: new Date(),
+          erro: null,
+          periodoInicio: resultado.periodoInicio
+            ? new Date(`${resultado.periodoInicio}T00:00:00Z`)
+            : null,
+          periodoFim: resultado.periodoFim
+            ? new Date(`${resultado.periodoFim}T00:00:00Z`)
+            : null,
+          competencia: derivarCompetencia(
+            resultado.periodoFim ?? resultado.periodoInicio,
+            doc.chegadaEm,
+          ),
+        },
+      });
+
+      await tx.registroAuditoria.create({
+        data: {
+          entidade: "DocumentoEntrada",
+          entidadeId: doc.id,
+          acao: "LEITURA_CONCLUIDA",
+          descricao:
+            `IA leu ${resultado.linhas.length} ` +
+            `${resultado.linhas.length === 1 ? "linha" : "linhas"} de ${doc.nomeArquivo}` +
+            (emRevisao > 0 ? ` — ${emRevisao} em conferência` : ""),
+          autorId: null,
+          autorEmail: null,
+          clienteId: doc.clienteId,
+        },
       });
     });
   } catch (erro) {
     await prisma.documentoEntrada.update({
       where: { id: doc.id },
       data: { status: "ERRO", erro: mensagemDeErro(erro) },
+    });
+    await prisma.registroAuditoria.create({
+      data: {
+        entidade: "DocumentoEntrada",
+        entidadeId: doc.id,
+        acao: "LEITURA_FALHOU",
+        descricao: `Falha ao ler ${doc.nomeArquivo}: ${mensagemDeErro(erro)}`,
+        autorId: null,
+        autorEmail: null,
+        clienteId: doc.clienteId,
+      },
     });
   }
 }
