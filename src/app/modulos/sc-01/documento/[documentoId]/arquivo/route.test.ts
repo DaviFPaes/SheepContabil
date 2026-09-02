@@ -7,9 +7,7 @@ vi.mock("@/lib/sessao-servidor", () => ({ obterSessao: async () => sessao }));
 import { GET } from "./route";
 
 const CNPJ = "99.999.999/0001-99";
-let inicio: Date;
 beforeEach(() => {
-  inicio = new Date();
   sessao = { usuarioId: "u", email: "admin@sheepcontabil.com.br", nome: "A", papel: "ADMIN", setor: null };
 });
 afterEach(async () => {
@@ -18,14 +16,17 @@ afterEach(async () => {
   await prisma.cliente.deleteMany({ where: { cnpj: CNPJ } });
 });
 
-async function doc() {
+async function doc(over: { mimeType?: string; nomeArquivo?: string; corpo?: string } = {}) {
   const c = await prisma.cliente.create({
     data: { razaoSocial: "Arquivo SC-01", cnpj: CNPJ, atividade: "T", email: "arquivo-sc01@example.com" },
   });
   return prisma.documentoEntrada.create({
     data: {
-      tipo: "EXTRATO", clienteId: c.id, nomeArquivo: "e.pdf", mimeType: "application/pdf",
-      arquivo: Buffer.from("%PDF-1.4 teste"), chegadaEm: new Date(),
+      tipo: "EXTRATO", clienteId: c.id,
+      nomeArquivo: over.nomeArquivo ?? "e.pdf",
+      mimeType: over.mimeType ?? "application/pdf",
+      arquivo: Buffer.from(over.corpo ?? "%PDF-1.4 teste"),
+      chegadaEm: new Date(),
     },
   });
 }
@@ -38,6 +39,19 @@ describe("GET arquivo", () => {
     expect(res.status).toBe(200);
     expect(res.headers.get("Content-Type")).toBe("application/pdf");
     expect(res.headers.get("Content-Disposition")).toContain("inline");
+    expect(res.headers.get("X-Content-Type-Options")).toBe("nosniff");
+  });
+  it("força download (attachment/octet-stream) para mimeType não visualizável", async () => {
+    const d = await doc({
+      mimeType: "text/html",
+      nomeArquivo: "x.html",
+      corpo: "<script>alert(1)</script>",
+    });
+    const res = await GET(req(), { params: Promise.resolve({ documentoId: d.id }) });
+    expect(res.status).toBe(200);
+    expect(res.headers.get("Content-Type")).toBe("application/octet-stream");
+    expect(res.headers.get("Content-Disposition")).toContain("attachment");
+    expect(res.headers.get("X-Content-Type-Options")).toBe("nosniff");
   });
   it("401 sem sessão", async () => {
     const d = await doc();
