@@ -1,4 +1,5 @@
 import type { PapelUsuario } from "@/generated/prisma/client";
+import { moduloVisivel, type PermissoesUsuario } from "./permissoes/regra";
 
 export type NaturezaModulo = "RPA" | "AGENTE_IA" | "CONTROLE";
 
@@ -58,11 +59,11 @@ export function filtrarModulosVisiveis(
   papel: PapelUsuario,
   setor: string | null,
   catalogo: ModuloCatalogo[] = CATALOGO_MODULOS,
+  permissoes?: PermissoesUsuario,
 ): ModuloCatalogo[] {
   return catalogo.filter((modulo) => {
     if (!modulo.implementado) return false;
-    if (papel === "ADMIN") return true;
-    return modulo.setorDono === setor;
+    return moduloVisivel(papel, setor, modulo, permissoes);
   });
 }
 
