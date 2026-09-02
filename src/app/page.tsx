@@ -103,13 +103,6 @@ export default async function PaginaHome() {
           <h1 className="mt-3 max-w-3xl font-titulo text-4xl font-extrabold leading-[1.04] tracking-tight text-nevoa sm:text-[3.25rem]">
             {saudacao(agora)}, {primeiroNome}.
           </h1>
-          <p className="mt-4 max-w-xl font-texto text-[15px] leading-relaxed text-nevoa/70">
-            {pendencias > 0
-              ? `Tudo que roda sozinho na SheepContabil, num lugar só — e ${pendencias} ${
-                  pendencias === 1 ? "item pede" : "itens pedem"
-                } a sua atenção agora.`
-              : "Tudo que roda sozinho na SheepContabil, num lugar só. Nada pendente no momento."}
-          </p>
 
           <dl className="mt-9 grid max-w-lg grid-cols-3 divide-x divide-white/10 border-y border-white/10">
             <Metrica valor={modulos.length} rotulo="Módulos ativos" />

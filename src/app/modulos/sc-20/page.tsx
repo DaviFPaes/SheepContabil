@@ -6,7 +6,6 @@ import { CabecalhoPortal } from "@/components/CabecalhoPortal";
 import { VeuAtmosferico } from "@/components/VeuAtmosferico";
 import { filtrarModulosVisiveis, obterModulo } from "@/lib/modulos-catalogo";
 import {
-  contarNaoAvisados,
   listarCertificados,
   listarClientesParaSelecao,
   listarHistorico,
@@ -29,10 +28,6 @@ const POR_PAGINA = 30;
 const ACOES_VALIDAS = new Set(NATUREZAS.map((n) => n.valor));
 const FAIXAS_VALIDAS = new Set<Bucket>(["OK", "D60", "D7", "D3", "VENCIDO", "RENOVADO"]);
 const TIPOS_VALIDOS = new Set(["ECNPJ", "ECPF", "NFE"]);
-
-function contar(qtd: number, singular: string, plural: string): string {
-  return `${qtd} ${qtd === 1 ? singular : plural}`;
-}
 
 function dataOpcional(iso: string | undefined): Date | undefined {
   if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return undefined;
@@ -115,8 +110,6 @@ export default async function PaginaSc20({
   ]);
 
   const colunas = montarColunasKanban(certificados);
-  const contagem = contarNaoAvisados(colunas);
-  const aAvisar = contagem.d60 + contagem.d7;
 
   const filtroCliente = sp.cliente || undefined;
   const filtroEvento =
@@ -186,12 +179,6 @@ export default async function PaginaSc20({
               <h1 className="mt-2 font-titulo text-3xl font-extrabold leading-[1.05] tracking-tight text-nevoa sm:text-[2.6rem]">
                 Vencimento de Certificado Digital
               </h1>
-              <p className="mt-3 max-w-xl font-texto text-[15px] leading-relaxed text-nevoa/70">
-                {contar(certificados.length, "certificado", "certificados")} na carteira
-                {aAvisar > 0
-                  ? ` · ${contar(aAvisar, "pede", "pedem")} contato esta semana.`
-                  : " · nada pendente esta semana."}
-              </p>
             </div>
 
             <SinoAvisos notificacoes={notificacoes} tom="escuro" />

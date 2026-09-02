@@ -97,11 +97,6 @@ export default async function PaginaSc11() {
               <h1 className="mt-2 font-titulo text-3xl font-extrabold leading-[1.05] tracking-tight text-nevoa sm:text-[2.6rem]">
                 {modulo.nome}
               </h1>
-              <p className="mt-3 max-w-xl font-texto text-[15px] leading-relaxed text-nevoa/70">
-                A IA classifica os itens de cada nota assim que ela chega; os{" "}
-                {contar(termos.length, "termo cadastrado", "termos cadastrados")}{" "}
-                resolvem os casos recorrentes e o restante cai no modelo.
-              </p>
             </div>
 
             {sessao.papel === "ADMIN" ? (
@@ -125,11 +120,6 @@ export default async function PaginaSc11() {
           <div className="flex flex-col gap-8 rounded-2xl border border-white/15 bg-nevoa/95 p-4 shadow-[0_24px_70px_-15px_rgba(11,26,32,0.65)] backdrop-blur-xl sm:p-6">
             <section>
               <h2 className="font-titulo text-lg font-bold text-tinta">Enviar NFS-e</h2>
-              <p className="mt-1 max-w-prose font-texto text-sm text-grafite">
-                Anexe o XML da nota de serviço e escolha o cliente — a
-                classificação roda na hora e você já abre na nota com o
-                resultado.
-              </p>
               <div className="mt-3">
                 <FormularioUploadNota clientes={clientes} />
               </div>
