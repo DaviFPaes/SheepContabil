@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Extrato de Movimentação — Cooperativa de Crédito Sul-Campos</title>
+<style>
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 32px 16px;
+    background: #dedad2;
+    font-family: "Georgia", "Times New Roman", Times, serif;
+    color: #1a1a1a;
+    font-size: 12pt;
+    line-height: 1.45;
+  }
+
+  .folha {
+    max-width: 800px;
+    margin: 0 auto;
+    background: #fffdf9;
+    padding: 26mm 24mm;
+    box-shadow: 0 6px 28px rgba(0, 0, 0, 0.2);
+  }
+
+  /* ---------- cabeçalho ---------- */
+  .cabecalho {
+    text-align: center;
+    margin-bottom: 22px;
+    padding-bottom: 16px;
+    border-bottom: 1px double #4a4530;
+  }
+
+  .sigla {
+    font-size: 10pt;
+    letter-spacing: 3px;
+    color: #6b6547;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .nome-cooperativa {
+    font-size: 17pt;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+
+  .subtitulo-doc {
+    font-size: 11.5pt;
+    font-style: italic;
+    color: #444;
+    margin-top: 4px;
+  }
+
+  .dados-institucionais {
+    font-size: 9.5pt;
+    color: #666;
+    margin-top: 8px;
+  }
+
+  /* ---------- identificação ---------- */
+  .identificacao {
+    margin: 0 auto 22px;
+    width: 100%;
+    font-size: 11pt;
+  }
+
+  .identificacao td {
+    padding: 3px 0;
+    vertical-align: top;
+  }
+
+  .identificacao td.rotulo {
+    width: 170px;
+    color: #6b6547;
+    font-style: italic;
+  }
+
+  .identificacao .periodo-linha td {
+    padding-top: 8px;
+    font-weight: 700;
+    font-size: 11.5pt;
+    border-top: 1px solid #d8d2c2;
+  }
+
+  /* ---------- tabela de movimentação ---------- */
+  h2.titulo-secao {
+    text-align: center;
+    font-size: 12pt;
+    font-weight: 400;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #4a4530;
+    margin: 0 0 12px;
+  }
+
+  table.movimentacao {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10.5pt;
+    margin-bottom: 20px;
+  }
+
+  table.movimentacao thead th {
+    border-top: 1px solid #4a4530;
+    border-bottom: 1px solid #4a4530;
+    text-align: left;
+    padding: 8px 6px;
+    font-weight: 700;
+    font-size: 10pt;
+    letter-spacing: 0.3px;
+  }
+
+  table.movimentacao th.num,
+  table.movimentacao td.num {
+    text-align: right;
+  }
+
+  table.movimentacao td {
+    padding: 7px 6px;
+    border-bottom: 1px solid #e8e3d6;
+  }
+
+  table.movimentacao td.data,
+  table.movimentacao td.doc {
+    white-space: nowrap;
+  }
+
+  table.movimentacao tfoot td {
+    border-top: 1px solid #4a4530;
+    border-bottom: none;
+    font-weight: 700;
+    padding-top: 10px;
+  }
+
+  /* ---------- rodapé ---------- */
+  .rodape {
+    border-top: 1px solid #d8d2c2;
+    padding-top: 12px;
+    font-size: 9pt;
+    color: #666;
+    text-align: center;
+    line-height: 1.6;
+  }
+
+  .paginacao {
+    text-align: center;
+    font-size: 9pt;
+    color: #888;
+    margin-top: 14px;
+  }
+
+  /* ---------- somente tela ---------- */
+  .aviso-tela {
+    max-width: 800px;
+    margin: 0 auto 12px;
+    padding: 10px 14px;
+    background: #fff8dc;
+    border: 1px solid #e0c65a;
+    border-radius: 6px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 10pt;
+    color: #6b5200;
+  }
+
+  @media print {
+    @page {
+      size: A4;
+      margin: 14mm;
+    }
+
+    body {
+      background: #ffffff;
+      padding: 0;
+      margin: 0;
+    }
+
+    .folha {
+      box-shadow: none;
+      padding: 0;
+      max-width: none;
+      margin: 0;
+    }
+
+    .aviso-tela {
+      display: none;
+    }
+  }
+</style>
+</head>
+<body>
+
+  <div class="aviso-tela">
+    Documento de exemplo para teste de upload/foto do módulo SC-01. Use <strong>Ctrl+P</strong> para imprimir em papel ou salvar como PDF. Instituição inteiramente fictícia — não representa nenhuma cooperativa real.
+  </div>
+
+  <div class="folha">
+
+    <div class="cabecalho">
+      <div class="sigla">SICSUL</div>
+      <div class="nome-cooperativa">Cooperativa de Crédito Sul-Campos</div>
+      <div class="subtitulo-doc">Extrato de Movimentação de Conta</div>
+      <div class="dados-institucionais">CNPJ 98.765.432/0001-10 · Cooperativa de crédito fictícia, sem existência real</div>
+    </div>
+
+    <table class="identificacao">
+      <tr>
+        <td class="rotulo">Cooperado(a)</td>
+        <td><b>Beta Consultoria Empresarial Ltda</b></td>
+        <td class="rotulo">Agência</td>
+        <td><b>0455</b></td>
+      </tr>
+      <tr>
+        <td class="rotulo">Conta corrente</td>
+        <td><b>10293-8</b></td>
+        <td class="rotulo">Emitido em</td>
+        <td><b>01/09/2026</b></td>
+      </tr>
+      <tr class="periodo-linha">
+        <td colspan="4">Período: 01/08/2026 a 29/08/2026</td>
+      </tr>
+    </table>
+
+    <h2 class="titulo-secao">Extrato de Lançamentos</h2>
+    <table class="movimentacao">
+      <thead>
+        <tr>
+          <th>Histórico</th>
+          <th>Data</th>
+          <th>Nº Doc</th>
+          <th class="num">Débito (R$)</th>
+          <th class="num">Crédito (R$)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Mensalidade associativa</td>
+          <td class="data">01/08</td>
+          <td class="doc">5501</td>
+          <td class="num">45,00</td>
+          <td class="num"></td>
+        </tr>
+        <tr>
+          <td>Recebimento PIX — consultoria prestada</td>
+          <td class="data">03/08</td>
+          <td class="doc">5502</td>
+          <td class="num"></td>
+          <td class="num">6.800,00</td>
+        </tr>
+        <tr>
+          <td>Pagamento de boleto — aluguel de sala comercial</td>
+          <td class="data">05/08</td>
+          <td class="doc">5503</td>
+          <td class="num">2.200,00</td>
+          <td class="num"></td>
+        </tr>
+        <tr>
+          <td>Transferência recebida — honorários</td>
+          <td class="data">08/08</td>
+          <td class="doc">5504</td>
+          <td class="num"></td>
+          <td class="num">4.150,00</td>
+        </tr>
+        <tr>
+          <td>Tarifa de manutenção de conta</td>
+          <td class="data">10/08</td>
+          <td class="doc">5505</td>
+          <td class="num">32,90</td>
+          <td class="num"></td>
+        </tr>
+        <tr>
+          <td>Pagamento a fornecedor — suprimentos de escritório</td>
+          <td class="data">12/08</td>
+          <td class="doc">5506</td>
+          <td class="num">610,25</td>
+          <td class="num"></td>
+        </tr>
+        <tr>
+          <td>Recebimento TED — projeto de consultoria</td>
+          <td class="data">15/08</td>
+          <td class="doc">5507</td>
+          <td class="num"></td>
+          <td class="num">9.400,00</td>
+        </tr>
+        <tr>
+          <td>Débito automático — plano de saúde</td>
+          <td class="data">18/08</td>
+          <td class="doc">5508</td>
+          <td class="num">1.320,00</td>
+          <td class="num"></td>
+        </tr>
+        <tr>
+          <td>Pagamento de imposto — ISS</td>
+          <td class="data">20/08</td>
+          <td class="doc">5509</td>
+          <td class="num">875,40</td>
+          <td class="num"></td>
+        </tr>
+        <tr>
+          <td>Recebimento PIX — cliente diverso</td>
+          <td class="data">22/08</td>
+          <td class="doc">5510</td>
+          <td class="num"></td>
+          <td class="num">2.300,00</td>
+        </tr>
+        <tr>
+          <td>Pagamento de folha — salários</td>
+          <td class="data">25/08</td>
+          <td class="doc">5511</td>
+          <td class="num">3.980,00</td>
+          <td class="num"></td>
+        </tr>
+        <tr>
+          <td>Rendimento sobre capital social</td>
+          <td class="data">29/08</td>
+          <td class="doc">5512</td>
+          <td class="num"></td>
+          <td class="num">58,12</td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="3">Totais do período</td>
+          <td class="num">9.063,55</td>
+          <td class="num">22.708,12</td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <div class="rodape">
+      Extrato gerado eletronicamente pela central de cooperativas. Confira os lançamentos e, em caso de divergência, procure o posto de atendimento em até 30 dias.<br>
+      Documento de exemplo, sem valor fiscal ou legal — instituição fictícia.
+    </div>
+
+    <div class="paginacao">Página 1 de 1</div>
+
+  </div>
+
+</body>
+</html>

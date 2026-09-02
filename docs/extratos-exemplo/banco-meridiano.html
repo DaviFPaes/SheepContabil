@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Extrato de Conta Corrente — Banco Meridiano S.A.</title>
+<style>
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 32px 16px;
+    background: #d9dde3;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #111111;
+    font-size: 12pt;
+    line-height: 1.35;
+  }
+
+  .folha {
+    max-width: 800px;
+    margin: 0 auto;
+    background: #ffffff;
+    padding: 18mm 15mm;
+    box-shadow: 0 6px 28px rgba(0, 0, 0, 0.22);
+  }
+
+  /* ---------- cabeçalho ---------- */
+  .cabecalho {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 3px solid #0b3d63;
+    padding-bottom: 14px;
+    margin-bottom: 14px;
+  }
+
+  .marca-banco {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .logo-marca {
+    width: 46px;
+    height: 46px;
+    border-radius: 10px;
+    background: #0b3d63;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 20pt;
+    flex: none;
+  }
+
+  .nome-banco {
+    font-size: 18pt;
+    font-weight: 700;
+    color: #0b3d63;
+    letter-spacing: 0.2px;
+  }
+
+  .subtitulo-doc {
+    font-size: 12pt;
+    font-weight: 600;
+    color: #333333;
+    margin-top: 2px;
+  }
+
+  .dados-institucionais {
+    text-align: right;
+    font-size: 9.5pt;
+    color: #555555;
+    line-height: 1.5;
+  }
+
+  /* ---------- linha de identificação da conta ---------- */
+  .linha-identificacao {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px 24px;
+    font-size: 11pt;
+    margin-bottom: 16px;
+    padding: 10px 14px;
+    background: #f4f6f8;
+    border: 1px solid #d7dce2;
+    border-radius: 6px;
+  }
+
+  .linha-identificacao div b {
+    color: #0b3d63;
+  }
+
+  .linha-identificacao .periodo {
+    grid-column: 1 / -1;
+    font-weight: 700;
+    font-size: 11.5pt;
+  }
+
+  /* ---------- caixa de resumo ---------- */
+  .resumo {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+
+  .resumo-item {
+    border: 1px solid #d7dce2;
+    border-top: 4px solid #0b3d63;
+    border-radius: 4px;
+    padding: 8px 10px;
+    text-align: left;
+  }
+
+  .resumo-item .rotulo {
+    font-size: 8.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: #666666;
+    margin-bottom: 4px;
+  }
+
+  .resumo-item .valor {
+    font-size: 12.5pt;
+    font-weight: 700;
+    font-family: "Courier New", Courier, monospace;
+  }
+
+  .resumo-item.creditos .valor { color: #0a6b30; }
+  .resumo-item.debitos .valor { color: #a11515; }
+
+  /* ---------- tabela de lançamentos ---------- */
+  h2.titulo-secao {
+    font-size: 11pt;
+    color: #0b3d63;
+    margin: 0 0 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+
+  table.lancamentos {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 10.5pt;
+    margin-bottom: 16px;
+  }
+
+  table.lancamentos thead th {
+    background: #0b3d63;
+    color: #ffffff;
+    text-align: left;
+    padding: 7px 8px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 9.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+
+  table.lancamentos td {
+    padding: 6px 8px;
+    border-bottom: 1px solid #e3e6ea;
+    white-space: nowrap;
+  }
+
+  table.lancamentos td.historico {
+    white-space: normal;
+  }
+
+  table.lancamentos tbody tr:nth-child(even) {
+    background: #f2f4f6;
+  }
+
+  table.lancamentos td.valor,
+  table.lancamentos td.saldo {
+    text-align: right;
+  }
+
+  td.valor.credito { color: #0a6b30; }
+  td.valor.debito { color: #a11515; }
+
+  /* ---------- rodapé ---------- */
+  .rodape {
+    border-top: 1px solid #d7dce2;
+    padding-top: 10px;
+    font-size: 9pt;
+    color: #555555;
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .rodape .disclaimer {
+    font-style: italic;
+  }
+
+  /* ---------- somente tela ---------- */
+  .aviso-tela {
+    max-width: 800px;
+    margin: 0 auto 12px;
+    padding: 10px 14px;
+    background: #fff8dc;
+    border: 1px solid #e0c65a;
+    border-radius: 6px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 10pt;
+    color: #6b5200;
+  }
+
+  @media print {
+    @page {
+      size: A4;
+      margin: 14mm;
+    }
+
+    body {
+      background: #ffffff;
+      padding: 0;
+      margin: 0;
+    }
+
+    .folha {
+      box-shadow: none;
+      padding: 0;
+      max-width: none;
+      margin: 0;
+    }
+
+    .aviso-tela {
+      display: none;
+    }
+  }
+</style>
+</head>
+<body>
+
+  <div class="aviso-tela">
+    Documento de exemplo para teste de upload/foto do módulo SC-01. Use <strong>Ctrl+P</strong> para imprimir em papel ou salvar como PDF. Instituição inteiramente fictícia — não representa nenhum banco real.
+  </div>
+
+  <div class="folha">
+
+    <div class="cabecalho">
+      <div class="marca-banco">
+        <div class="logo-marca">M</div>
+        <div>
+          <div class="nome-banco">Banco Meridiano S.A.</div>
+          <div class="subtitulo-doc">Extrato de Conta Corrente</div>
+        </div>
+      </div>
+      <div class="dados-institucionais">
+        CNPJ 12.345.678/0001-90<br>
+        Instituição financeira fictícia<br>
+        www.meridiano.exemplo.com.br
+      </div>
+    </div>
+
+    <div class="linha-identificacao">
+      <div>Agência: <b>1201</b></div>
+      <div>Conta corrente: <b>45678-9</b></div>
+      <div>Titular: <b>Alfa Comércio de Materiais Ltda</b></div>
+      <div>Emitido em: <b>01/09/2026</b></div>
+      <div class="periodo">Período: 01/08/2026 a 31/08/2026</div>
+    </div>
+
+    <div class="resumo">
+      <div class="resumo-item">
+        <div class="rotulo">Saldo anterior</div>
+        <div class="valor">R$ 18.432,10</div>
+      </div>
+      <div class="resumo-item creditos">
+        <div class="rotulo">Total de créditos</div>
+        <div class="valor">R$ 17.212,18</div>
+      </div>
+      <div class="resumo-item debitos">
+        <div class="rotulo">Total de débitos</div>
+        <div class="valor">R$ 11.217,04</div>
+      </div>
+      <div class="resumo-item">
+        <div class="rotulo">Saldo atual</div>
+        <div class="valor">R$ 24.427,24</div>
+      </div>
+    </div>
+
+    <h2 class="titulo-secao">Lançamentos do período</h2>
+    <table class="lancamentos">
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Histórico</th>
+          <th>Documento</th>
+          <th style="text-align:right">Valor (R$)</th>
+          <th style="text-align:right">Saldo (R$)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>01/08</td>
+          <td class="historico">PIX RECEBIDO - COMERCIO SILVA E FILHOS</td>
+          <td>000123456</td>
+          <td class="valor credito">+3.250,00</td>
+          <td class="saldo">21.682,10</td>
+        </tr>
+        <tr>
+          <td>03/08</td>
+          <td class="historico">TED ENVIADA - MOVEIS SUL DISTRIBUIDORA LTDA</td>
+          <td>000456781</td>
+          <td class="valor debito">-4.800,00</td>
+          <td class="saldo">16.882,10</td>
+        </tr>
+        <tr>
+          <td>04/08</td>
+          <td class="historico">TARIFA MANUTENCAO DE CONTA</td>
+          <td>000000112</td>
+          <td class="valor debito">-49,90</td>
+          <td class="saldo">16.832,20</td>
+        </tr>
+        <tr>
+          <td>05/08</td>
+          <td class="historico">PAGAMENTO DE BOLETO - DISTRIB NORTE MATERIAIS</td>
+          <td>000789012</td>
+          <td class="valor debito">-2.310,45</td>
+          <td class="saldo">14.521,75</td>
+        </tr>
+        <tr>
+          <td>07/08</td>
+          <td class="historico">PIX ENVIADO - TRANSPORTES RAPIDO LTDA</td>
+          <td>000234567</td>
+          <td class="valor debito">-890,00</td>
+          <td class="saldo">13.631,75</td>
+        </tr>
+        <tr>
+          <td>10/08</td>
+          <td class="historico">DEPOSITO EM ESPECIE - AGENCIA 1201</td>
+          <td>000000998</td>
+          <td class="valor credito">+1.500,00</td>
+          <td class="saldo">15.131,75</td>
+        </tr>
+        <tr>
+          <td>12/08</td>
+          <td class="historico">RENDIMENTO APLICACAO AUTOMATICA</td>
+          <td>000000001</td>
+          <td class="valor credito">+42,18</td>
+          <td class="saldo">15.173,93</td>
+        </tr>
+        <tr>
+          <td>14/08</td>
+          <td class="historico">DEBITO AUTOMATICO - SEGURO EMPRESARIAL COMPANHIA</td>
+          <td>000345678</td>
+          <td class="valor debito">-670,32</td>
+          <td class="saldo">14.503,61</td>
+        </tr>
+        <tr>
+          <td>15/08</td>
+          <td class="historico">PIX RECEBIDO - MARIA OLIVEIRA COMERCIAL</td>
+          <td>000567890</td>
+          <td class="valor credito">+5.120,00</td>
+          <td class="saldo">19.623,61</td>
+        </tr>
+        <tr>
+          <td>18/08</td>
+          <td class="historico">TED RECEBIDA - VENDA LOTE 445 EQUIPAMENTOS</td>
+          <td>000678901</td>
+          <td class="valor credito">+7.300,00</td>
+          <td class="saldo">26.923,61</td>
+        </tr>
+        <tr>
+          <td>20/08</td>
+          <td class="historico">PAGAMENTO DE BOLETO - CIA DE ENERGIA ELETRICA</td>
+          <td>000890123</td>
+          <td class="valor debito">-1.245,67</td>
+          <td class="saldo">25.677,94</td>
+        </tr>
+        <tr>
+          <td>22/08</td>
+          <td class="historico">IOF SOBRE OPERACAO DE CREDITO</td>
+          <td>000000445</td>
+          <td class="valor debito">-38,20</td>
+          <td class="saldo">25.639,74</td>
+        </tr>
+        <tr>
+          <td>26/08</td>
+          <td class="historico">PIX ENVIADO - ADIANTAMENTO SALARIAL</td>
+          <td>000901234</td>
+          <td class="valor debito">-1.200,00</td>
+          <td class="saldo">24.439,74</td>
+        </tr>
+        <tr>
+          <td>29/08</td>
+          <td class="historico">TARIFA TED</td>
+          <td>000000556</td>
+          <td class="valor debito">-12,50</td>
+          <td class="saldo">24.427,24</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="rodape">
+      <div>SAC 0800 000 0000 · Ouvidoria 0800 000 0001<br>Atendimento 24h, todos os dias.</div>
+      <div class="disclaimer">Documento gerado eletronicamente para fins de exemplo. Sem valor fiscal.</div>
+    </div>
+
+  </div>
+
+</body>
+</html>
