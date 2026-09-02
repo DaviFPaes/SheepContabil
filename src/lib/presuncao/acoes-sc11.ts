@@ -8,6 +8,7 @@ import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@/generated/prisma/client";
 import { obterSessao } from "@/lib/sessao-servidor";
 import { filtrarModulosVisiveis } from "@/lib/modulos-catalogo";
+import { obterPermissoesUsuario } from "@/lib/permissoes/consultas";
 import { executarModulo } from "@/lib/execucao";
 import { processarDocumento } from "./processar-sc11";
 import { normalizar, type AliquotaPresuncao } from "./presuncao-termos";
@@ -18,9 +19,13 @@ const TAMANHO_MAX = 5 * 1024 * 1024;
 
 async function exigirAcessoSc11() {
   const sessao = await obterSessao();
+  const permissoes =
+    sessao?.papel === "OPERADOR" ? await obterPermissoesUsuario(sessao.usuarioId) : undefined;
   const podeVer =
     sessao !== null &&
-    filtrarModulosVisiveis(sessao.papel, sessao.setor).some((m) => m.codigo === "SC-11");
+    filtrarModulosVisiveis(sessao.papel, sessao.setor, undefined, permissoes).some(
+      (m) => m.codigo === "SC-11",
+    );
   if (!sessao || !podeVer) throw new Error("Sem acesso ao módulo SC-11.");
   return sessao;
 }

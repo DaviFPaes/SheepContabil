@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { obterSessao } from "@/lib/sessao-servidor";
 import { filtrarModulosVisiveis } from "@/lib/modulos-catalogo";
+import { obterPermissoesUsuario } from "@/lib/permissoes/consultas";
 import { obterDocumentoComLancamentos } from "@/lib/documentos/consultas-sc01";
 import { gerarOfx } from "@/lib/documentos/ofx";
 import { prisma } from "@/lib/prisma";
@@ -19,9 +20,11 @@ export async function GET(
   { params }: { params: Promise<{ documentoId: string }> },
 ) {
   const sessao = await obterSessao();
+  const permissoes =
+    sessao?.papel === "OPERADOR" ? await obterPermissoesUsuario(sessao.usuarioId) : undefined;
   const podeVer =
     sessao !== null &&
-    filtrarModulosVisiveis(sessao.papel, sessao.setor).some(
+    filtrarModulosVisiveis(sessao.papel, sessao.setor, undefined, permissoes).some(
       (m) => m.codigo === "SC-01",
     );
   if (!sessao || !podeVer) {

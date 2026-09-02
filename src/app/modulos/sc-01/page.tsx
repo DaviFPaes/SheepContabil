@@ -5,6 +5,7 @@ import { sair } from "@/lib/sessao-acoes";
 import { CabecalhoPortal } from "@/components/CabecalhoPortal";
 import { VeuAtmosferico } from "@/components/VeuAtmosferico";
 import { filtrarModulosVisiveis, obterModulo } from "@/lib/modulos-catalogo";
+import { obterPermissoesUsuario } from "@/lib/permissoes/consultas";
 import {
   listarClientesParaUpload,
   listarContasDoCliente,
@@ -76,10 +77,15 @@ export default async function PaginaSc01({
     redirect("/login");
   }
 
+  const permissoes =
+    sessao.papel === "OPERADOR" ? await obterPermissoesUsuario(sessao.usuarioId) : undefined;
+
   const modulo = obterModulo("SC-01");
   const podeVer =
     modulo !== undefined &&
-    filtrarModulosVisiveis(sessao.papel, sessao.setor).some((m) => m.codigo === "SC-01");
+    filtrarModulosVisiveis(sessao.papel, sessao.setor, undefined, permissoes).some(
+      (m) => m.codigo === "SC-01",
+    );
   if (!modulo || !podeVer) {
     redirect("/");
   }

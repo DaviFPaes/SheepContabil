@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { obterSessao } from "@/lib/sessao-servidor";
 import { filtrarModulosVisiveis } from "@/lib/modulos-catalogo";
+import { obterPermissoesUsuario } from "@/lib/permissoes/consultas";
 import { listarHistoricoDocumentos } from "@/lib/documentos/consultas-sc01";
 import { gerarCsvAuditoria } from "@/lib/documentos/csv-auditoria";
 import { NATUREZAS, type AcaoAuditoriaDocumento } from "@/lib/documentos/historico";
@@ -14,9 +15,13 @@ function dataOpcional(iso: string | null): Date | undefined {
 
 export async function GET(request: Request) {
   const sessao = await obterSessao();
+  const permissoes =
+    sessao?.papel === "OPERADOR" ? await obterPermissoesUsuario(sessao.usuarioId) : undefined;
   const podeVer =
     sessao !== null &&
-    filtrarModulosVisiveis(sessao.papel, sessao.setor).some((m) => m.codigo === "SC-01");
+    filtrarModulosVisiveis(sessao.papel, sessao.setor, undefined, permissoes).some(
+      (m) => m.codigo === "SC-01",
+    );
   if (!sessao || !podeVer) {
     return NextResponse.json({ erro: "Não autorizado." }, { status: 401 });
   }

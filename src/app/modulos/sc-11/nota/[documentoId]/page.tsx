@@ -4,6 +4,7 @@ import { obterSessao } from "@/lib/sessao-servidor";
 import { sair } from "@/lib/sessao-acoes";
 import { CabecalhoPortal } from "@/components/CabecalhoPortal";
 import { filtrarModulosVisiveis, obterModulo } from "@/lib/modulos-catalogo";
+import { obterPermissoesUsuario } from "@/lib/permissoes/consultas";
 import { obterNotaComItens } from "@/lib/presuncao/consultas-sc11";
 import { reprocessarNota } from "@/lib/presuncao/acoes-sc11";
 import { formatarDataUTC } from "@/lib/presuncao/formato-presuncao";
@@ -23,10 +24,12 @@ export default async function PaginaNotaSc11({
     redirect("/login");
   }
 
+  const permissoes =
+    sessao.papel === "OPERADOR" ? await obterPermissoesUsuario(sessao.usuarioId) : undefined;
   const modulo = obterModulo("SC-11");
   const podeVer =
     modulo !== undefined &&
-    filtrarModulosVisiveis(sessao.papel, sessao.setor).some(
+    filtrarModulosVisiveis(sessao.papel, sessao.setor, undefined, permissoes).some(
       (m) => m.codigo === "SC-11",
     );
   if (!modulo || !podeVer) {

@@ -6,6 +6,7 @@ import { CabecalhoPortal } from "@/components/CabecalhoPortal";
 import { VeuAtmosferico } from "@/components/VeuAtmosferico";
 import { HistoricoExecucoes } from "@/components/HistoricoExecucoes";
 import { filtrarModulosVisiveis, obterModulo } from "@/lib/modulos-catalogo";
+import { obterPermissoesUsuario } from "@/lib/permissoes/consultas";
 import { listarHistorico } from "@/lib/execucao";
 import { listarNotas, listarTermos } from "@/lib/presuncao/consultas-sc11";
 import { listarClientesParaUpload } from "@/lib/clientes";
@@ -47,10 +48,15 @@ export default async function PaginaSc11() {
     redirect("/login");
   }
 
+  const permissoes =
+    sessao.papel === "OPERADOR" ? await obterPermissoesUsuario(sessao.usuarioId) : undefined;
+
   const modulo = obterModulo("SC-11");
   const podeVer =
     modulo !== undefined &&
-    filtrarModulosVisiveis(sessao.papel, sessao.setor).some((m) => m.codigo === "SC-11");
+    filtrarModulosVisiveis(sessao.papel, sessao.setor, undefined, permissoes).some(
+      (m) => m.codigo === "SC-11",
+    );
   if (!modulo || !podeVer) {
     redirect("/");
   }

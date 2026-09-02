@@ -8,6 +8,7 @@ import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@/generated/prisma/client";
 import { obterSessao } from "@/lib/sessao-servidor";
 import { filtrarModulosVisiveis } from "@/lib/modulos-catalogo";
+import { obterPermissoesUsuario } from "@/lib/permissoes/consultas";
 import { executarModulo } from "@/lib/execucao";
 import { processarDocumento } from "./processar-sc01";
 import {
@@ -22,9 +23,11 @@ const TAMANHO_MAX = 15 * 1024 * 1024;
 
 async function exigirAcessoSc01() {
   const sessao = await obterSessao();
+  const permissoes =
+    sessao?.papel === "OPERADOR" ? await obterPermissoesUsuario(sessao.usuarioId) : undefined;
   const podeVer =
     sessao !== null &&
-    filtrarModulosVisiveis(sessao.papel, sessao.setor).some(
+    filtrarModulosVisiveis(sessao.papel, sessao.setor, undefined, permissoes).some(
       (m) => m.codigo === "SC-01",
     );
   if (!sessao || !podeVer) {
