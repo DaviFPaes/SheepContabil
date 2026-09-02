@@ -30,6 +30,33 @@ model Usuario {
 
   notificacoes       NotificacaoInApp[]
   registrosAuditoria RegistroAuditoria[]
+  permissoesModulo   PermissaoModulo[]
+  permissoesSubArea  PermissaoSubArea[]
+}
+
+model PermissaoModulo {
+  id           String   @id @default(cuid())
+  usuarioId    String
+  usuario      Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  moduloCodigo String
+  habilitado   Boolean  @default(false)
+  atualizadoEm DateTime @updatedAt
+
+  @@unique([usuarioId, moduloCodigo])
+  @@index([usuarioId])
+}
+
+model PermissaoSubArea {
+  id           String   @id @default(cuid())
+  usuarioId    String
+  usuario      Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  moduloCodigo String
+  subArea      String
+  habilitado   Boolean  @default(true)
+  atualizadoEm DateTime @updatedAt
+
+  @@unique([usuarioId, moduloCodigo, subArea])
+  @@index([usuarioId])
 }
 
 model Cliente {
