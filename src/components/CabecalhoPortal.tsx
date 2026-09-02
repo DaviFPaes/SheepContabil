@@ -1,4 +1,5 @@
 import type { PapelUsuario } from "@/generated/prisma/client";
+import Link from "next/link";
 import { LogoSheep } from "./LogoSheep";
 import type { ReactNode } from "react";
 
@@ -30,6 +31,14 @@ export function CabecalhoPortal({
         <span className="hidden sm:inline">
           {nomeUsuario} · {papel === "ADMIN" ? "Administrador" : "Operador"}
         </span>
+        {papel === "ADMIN" ? (
+          <Link
+            href="/admin/usuarios"
+            className="hidden font-texto text-sm text-nevoa/85 underline-offset-2 transition-colors hover:text-nevoa hover:underline sm:inline motion-reduce:transition-none"
+          >
+            Gerenciar usuários
+          </Link>
+        ) : null}
         {acaoSair}
       </div>
     </header>
