@@ -14,22 +14,33 @@ const MARCADOR = "sc01-teste";
 
 afterEach(async () => {
   // RegistroAuditoria nao tem FK para DocumentoEntrada (entidade/entidadeId e
-  // uma referencia solta), entao junta os ids dos docs deste teste + os do seed
-  // que o sweep global de processarExtratos pode ter tocado, e apaga as linhas
-  // de auditoria por entidadeId antes de remover os docs.
-  const docsParaLimpar = await prisma.documentoEntrada.findMany({
-    where: {
-      OR: [
-        { nomeArquivo: { startsWith: MARCADOR } },
-        { nomeArquivo: { startsWith: "extrato-" } },
-      ],
-    },
+  // uma referencia solta), entao junta os ids por prefixo e apaga as linhas de
+  // auditoria antes de remover os docs.
+  //
+  // Docs deste teste (sc01-teste-*): apaga a auditoria inteira deles.
+  const docsTeste = await prisma.documentoEntrada.findMany({
+    where: { nomeArquivo: { startsWith: MARCADOR } },
     select: { id: true },
   });
   await prisma.registroAuditoria.deleteMany({
     where: {
       entidade: "DocumentoEntrada",
-      entidadeId: { in: docsParaLimpar.map((d) => d.id) },
+      entidadeId: { in: docsTeste.map((d) => d.id) },
+    },
+  });
+
+  // Extratos do seed (extrato-*) que o sweep global de processarExtratos pode
+  // ter tocado: apaga SO as linhas que o codigo desta task cria, preservando
+  // qualquer outra auditoria pre-existente desses docs.
+  const docsSeed = await prisma.documentoEntrada.findMany({
+    where: { nomeArquivo: { startsWith: "extrato-" } },
+    select: { id: true },
+  });
+  await prisma.registroAuditoria.deleteMany({
+    where: {
+      entidade: "DocumentoEntrada",
+      entidadeId: { in: docsSeed.map((d) => d.id) },
+      acao: { in: ["LEITURA_CONCLUIDA", "LEITURA_FALHOU"] },
     },
   });
 
