@@ -14,9 +14,11 @@ vi.mock("@/lib/sessao-servidor", () => ({
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 
 import { prisma } from "@/lib/prisma";
+import { gerarCnpjValido } from "@/lib/cnpj";
 import {
   avisarClienteD3,
   criarCertificado,
+  editarCliente,
   enviarAvisosLote,
   marcarGrupoLido,
   renovarCertificadoVencido,
@@ -37,11 +39,21 @@ beforeAll(async () => {
       setor: "Processos",
     },
   });
+  // exigirAcessoSc20() agora consulta a permissao por usuario (ver
+  // src/lib/permissoes) — sem essa linha o operador de teste nao teria
+  // nenhum modulo ligado ("nada ate liberar") e toda acao aqui embaixo
+  // falharia com "Sem acesso ao modulo SC-20.".
+  await prisma.permissaoModulo.upsert({
+    where: { usuarioId_moduloCodigo: { usuarioId: USUARIO_ID, moduloCodigo: "SC-20" } },
+    update: { habilitado: true },
+    create: { usuarioId: USUARIO_ID, moduloCodigo: "SC-20", habilitado: true },
+  });
 });
 
 afterAll(async () => {
   await prisma.registroAuditoria.deleteMany({ where: { autorId: USUARIO_ID } });
   await prisma.notificacaoInApp.deleteMany({ where: { usuarioId: USUARIO_ID } });
+  await prisma.permissaoModulo.deleteMany({ where: { usuarioId: USUARIO_ID } });
   await prisma.usuario.deleteMany({ where: { id: USUARIO_ID } });
 });
 
@@ -333,6 +345,130 @@ describe("enviarAvisosLote", () => {
 
     const r = await enviarAvisosLote("D60", [a.id]);
     expect(r).toEqual({ enviados: 0 });
+  });
+});
+
+describe("editarCliente", () => {
+  const CNPJ_EDITAR = gerarCnpjValido("90000001");
+  const CNPJ_EDITAR_OUTRO = gerarCnpjValido("90000002");
+
+  afterEach(async () => {
+    await prisma.registroAuditoria.deleteMany({
+      where: { cliente: { cnpj: { in: [CNPJ_EDITAR, CNPJ_EDITAR_OUTRO] } } },
+    });
+    await prisma.cliente.deleteMany({ where: { cnpj: { in: [CNPJ_EDITAR, CNPJ_EDITAR_OUTRO] } } });
+  });
+
+  async function clienteEditavel(overrides: Partial<{ razaoSocial: string; cnpj: string; email: string }> = {}) {
+    return prisma.cliente.create({
+      data: {
+        razaoSocial: "Cliente Editar SC-20",
+        cnpj: CNPJ_EDITAR,
+        atividade: "Comércio",
+        email: "cliente-editar-sc20@example.com",
+        ...overrides,
+      },
+    });
+  }
+
+  it("atualiza os dados e grava auditoria EDITADO", async () => {
+    const cliente = await clienteEditavel();
+
+    const r = await editarCliente(
+      null,
+      fd({
+        id: cliente.id,
+        razaoSocial: "Cliente Editar SC-20 Renomeado",
+        cnpj: CNPJ_EDITAR,
+        atividade: "Serviços",
+        email: "novo-email-sc20@example.com",
+        telefone: "+55 11 90000-0000",
+        ativo: "on",
+      }),
+    );
+    expect(r).toEqual({ ok: true });
+
+    const atualizado = await prisma.cliente.findUniqueOrThrow({ where: { id: cliente.id } });
+    expect(atualizado.razaoSocial).toBe("Cliente Editar SC-20 Renomeado");
+    expect(atualizado.atividade).toBe("Serviços");
+    expect(atualizado.email).toBe("novo-email-sc20@example.com");
+    expect(atualizado.telefone).toBe("+55 11 90000-0000");
+    expect(atualizado.ativo).toBe(true);
+
+    const audit = await prisma.registroAuditoria.findMany({
+      where: { clienteId: cliente.id, entidade: "Cliente", acao: "EDITADO" },
+    });
+    expect(audit).toHaveLength(1);
+  });
+
+  it("desativa o cliente quando o checkbox 'ativo' nao vem marcado", async () => {
+    const cliente = await clienteEditavel();
+
+    const r = await editarCliente(
+      null,
+      fd({
+        id: cliente.id,
+        razaoSocial: cliente.razaoSocial,
+        cnpj: cliente.cnpj,
+        atividade: cliente.atividade,
+        email: cliente.email,
+      }),
+    );
+    expect(r).toEqual({ ok: true });
+
+    const atualizado = await prisma.cliente.findUniqueOrThrow({ where: { id: cliente.id } });
+    expect(atualizado.ativo).toBe(false);
+  });
+
+  it("rejeita CNPJ invalido", async () => {
+    const cliente = await clienteEditavel();
+
+    const r = await editarCliente(
+      null,
+      fd({
+        id: cliente.id,
+        razaoSocial: cliente.razaoSocial,
+        cnpj: "11.111.111/1111-11",
+        atividade: cliente.atividade,
+        email: cliente.email,
+      }),
+    );
+    expect(r).toEqual({ erro: expect.stringMatching(/CNPJ válido/i) });
+  });
+
+  it("rejeita CNPJ ja usado por outro cliente", async () => {
+    const cliente = await clienteEditavel();
+    await clienteEditavel({
+      cnpj: CNPJ_EDITAR_OUTRO,
+      razaoSocial: "Outro Cliente SC-20",
+      email: "outro-cliente-editar-sc20@example.com",
+    });
+
+    const r = await editarCliente(
+      null,
+      fd({
+        id: cliente.id,
+        razaoSocial: cliente.razaoSocial,
+        cnpj: CNPJ_EDITAR_OUTRO,
+        atividade: cliente.atividade,
+        email: cliente.email,
+      }),
+    );
+    expect(r).toEqual({ erro: expect.stringMatching(/já existe/i) });
+  });
+
+  it("recusa cliente inexistente", async () => {
+    const r = await editarCliente(
+      null,
+      fd({
+        id: "id-que-nao-existe",
+        razaoSocial: "X",
+        cnpj: CNPJ_EDITAR,
+        atividade: "Y",
+        email: "x@example.com",
+      }),
+    );
+    expect(r).toEqual({ erro: "Cliente não encontrado." });
   });
 });
 

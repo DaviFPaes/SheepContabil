@@ -6,6 +6,8 @@ import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { obterSessao } from "@/lib/sessao-servidor";
 import { filtrarModulosVisiveis } from "@/lib/modulos-catalogo";
+import { cnpjValido } from "@/lib/cnpj";
+import { obterPermissoesUsuario } from "@/lib/permissoes/consultas";
 import { calcularBucket, diasRestantes } from "./bucket";
 import { obterPerfilCliente as lerPerfilCliente } from "./consultas";
 
@@ -13,13 +15,17 @@ const ROTA = "/modulos/sc-20";
 
 async function exigirAcessoSc20() {
   const sessao = await obterSessao();
-  const podeVer =
-    sessao !== null &&
-    filtrarModulosVisiveis(sessao.papel, sessao.setor).some(
-      (modulo) => modulo.codigo === "SC-20",
-    );
+  if (!sessao) {
+    throw new Error("Sem acesso ao módulo SC-20.");
+  }
 
-  if (!sessao || !podeVer) {
+  const permissoes =
+    sessao.papel === "OPERADOR" ? await obterPermissoesUsuario(sessao.usuarioId) : undefined;
+  const podeVer = filtrarModulosVisiveis(sessao.papel, sessao.setor, undefined, permissoes).some(
+    (modulo) => modulo.codigo === "SC-20",
+  );
+
+  if (!podeVer) {
     throw new Error("Sem acesso ao módulo SC-20.");
   }
   return sessao;
@@ -573,4 +579,95 @@ export async function obterPerfilCliente(clienteId: string) {
   const id = z.string().min(1).safeParse(clienteId);
   if (!id.success) return null;
   return lerPerfilCliente(id.data);
+}
+
+const esquemaCliente = z.object({
+  id: z.string().min(1, "Cliente não informado."),
+  razaoSocial: z.string().trim().min(1, "Informe a razão social."),
+  cnpj: z
+    .string()
+    .trim()
+    .min(1, "Informe o CNPJ.")
+    .refine((v) => cnpjValido(v), "Informe um CNPJ válido."),
+  atividade: z.string().trim().min(1, "Informe a atividade."),
+  email: z.string().trim().min(1, "Informe o e-mail.").email("Informe um e-mail válido."),
+  telefone: z
+    .string()
+    .optional()
+    .transform((v) => (v && v.trim().length > 0 ? v.trim() : null)),
+  ativo: z.string().optional(),
+});
+
+// Acionada pelo link na razão social do "Perfil do cliente" — cobre o caso
+// de clientes cadastrados sem telefone/e-mail correto, sem precisar de uma
+// tela separada de cadastro.
+export async function editarCliente(
+  _estadoAnterior: EstadoForm,
+  formData: FormData,
+): Promise<EstadoForm> {
+  const sessao = await exigirAcessoSc20();
+
+  const dados = esquemaCliente.safeParse({
+    id: formData.get("id"),
+    razaoSocial: formData.get("razaoSocial"),
+    cnpj: formData.get("cnpj"),
+    atividade: formData.get("atividade"),
+    email: formData.get("email"),
+    telefone: formData.get("telefone") ?? undefined,
+    ativo: formData.get("ativo") ?? undefined,
+  });
+  if (!dados.success) {
+    return { erro: dados.error.issues[0]?.message ?? "Dados inválidos." };
+  }
+
+  const cliente = await prisma.cliente.findUnique({ where: { id: dados.data.id } });
+  if (!cliente) {
+    return { erro: "Cliente não encontrado." };
+  }
+
+  const cnpjDuplicado = await prisma.cliente.findFirst({
+    where: { cnpj: dados.data.cnpj, NOT: { id: cliente.id } },
+    select: { id: true },
+  });
+  if (cnpjDuplicado) {
+    return { erro: "Já existe um cliente cadastrado com este CNPJ." };
+  }
+
+  const ativo = dados.data.ativo === "on";
+  const dadosAntes = {
+    razaoSocial: cliente.razaoSocial,
+    cnpj: cliente.cnpj,
+    atividade: cliente.atividade,
+    email: cliente.email,
+    telefone: cliente.telefone,
+    ativo: cliente.ativo,
+  };
+  const dadosDepois = {
+    razaoSocial: dados.data.razaoSocial,
+    cnpj: dados.data.cnpj,
+    atividade: dados.data.atividade,
+    email: dados.data.email,
+    telefone: dados.data.telefone,
+    ativo,
+  };
+
+  await prisma.$transaction(async (tx) => {
+    await tx.cliente.update({ where: { id: cliente.id }, data: dadosDepois });
+    await tx.registroAuditoria.create({
+      data: {
+        entidade: "Cliente",
+        entidadeId: cliente.id,
+        acao: "EDITADO",
+        descricao: `Cadastro de ${dados.data.razaoSocial} editado`,
+        autorId: sessao.usuarioId,
+        autorEmail: sessao.email,
+        clienteId: cliente.id,
+        dadosAntes,
+        dadosDepois,
+      },
+    });
+  });
+
+  revalidatePath(ROTA);
+  return { ok: true };
 }
