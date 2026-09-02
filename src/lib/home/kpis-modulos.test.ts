@@ -39,6 +39,8 @@ function extrato(
     totalLancamentos: emRevisao,
     emRevisao,
     podeBaixarOfx: false,
+    bancoRotulo: null,
+    competencia: "2026-08",
   };
 }
 

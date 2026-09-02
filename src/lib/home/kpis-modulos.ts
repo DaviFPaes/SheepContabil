@@ -199,7 +199,7 @@ export async function obterKpiModulo(
     case "SC-20":
       return resumirKpiSc20(await listarCertificados());
     case "SC-01":
-      return resumirKpiSc01(await listarDocumentos("EXTRATO"));
+      return resumirKpiSc01(await listarDocumentos({ tipo: "EXTRATO" }));
     case "SC-11":
       return resumirKpiSc11(await listarNotas());
     default:

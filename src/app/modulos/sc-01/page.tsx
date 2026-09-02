@@ -64,7 +64,7 @@ export default async function PaginaSc01() {
 
   const [execucoes, documentos, clientes] = await Promise.all([
     listarHistorico("SC-01"),
-    listarDocumentos("EXTRATO"),
+    listarDocumentos({ tipo: "EXTRATO" }),
     listarClientesParaUpload(),
   ]);
 
