@@ -219,12 +219,16 @@ model DocumentoEntrada {
   status          StatusDocumento @default(PENDENTE)
   chegadaEm       DateTime
   processadoEm    DateTime?
+  periodoInicio   DateTime?
+  periodoFim      DateTime?
+  competencia     String?
   erro            String?
   lancamentos     Lancamento[]
   notaServico     NotaServico?
   criadoEm        DateTime        @default(now())
 
   @@index([tipo, status])
+  @@index([tipo, competencia])
 }
 
 model Lancamento {
