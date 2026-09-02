@@ -6,8 +6,9 @@ import { SpecularButton } from "@/components/ui/SpecularButton";
 // Mesmo motivo do BotaoAtualizar (SC-20): fica DENTRO do <form action={acao}>
 // so para ler o status de envio e, enquanto `pending`, desabilitar + trocar o
 // rotulo — evita o duplo clique que dispararia duas execucoes sobrepostas.
-// Serve tanto para "processar pendentes" (sem documentoId) quanto para o
-// "reprocessar" da tela de detalhe (com documentoId no hidden).
+// Hoje só serve pro "reprocessar" da tela de detalhe (documentoId no hidden):
+// SC-01 e SC-11 classificam sozinhos no envio, então isso é so a rede de
+// recuperação quando algo falhou ou ficou preso em PENDENTE.
 
 type AcaoFormulario = (formData: FormData) => void | Promise<void>;
 

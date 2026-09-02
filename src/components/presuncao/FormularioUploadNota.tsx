@@ -78,7 +78,7 @@ export function FormularioUploadNota({ clientes }: { clientes: Cliente[] }) {
             <path d="M5 21h14" />
           </svg>
         )}
-        {pendente ? "Enviando…" : "Enviar para a fila"}
+        {pendente ? "Enviando…" : "Enviar"}
       </SpecularButton>
 
       {estado?.erro ? (

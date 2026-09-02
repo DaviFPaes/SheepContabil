@@ -5,7 +5,7 @@ import { sair } from "@/lib/sessao-acoes";
 import { CabecalhoPortal } from "@/components/CabecalhoPortal";
 import { filtrarModulosVisiveis, obterModulo } from "@/lib/modulos-catalogo";
 import { obterNotaComItens } from "@/lib/presuncao/consultas-sc11";
-import { processarUma } from "@/lib/presuncao/acoes-sc11";
+import { reprocessarNota } from "@/lib/presuncao/acoes-sc11";
 import { formatarDataUTC } from "@/lib/presuncao/formato-presuncao";
 import { BadgeStatusDocumento } from "@/components/documentos/BadgeStatusDocumento";
 import { BotaoProcessar } from "@/components/documentos/BotaoProcessar";
@@ -80,15 +80,16 @@ export default async function PaginaNotaSc11({
 
         {nota.status === "PENDENTE" ? (
           <section className="flex flex-col gap-2">
+            <p className="max-w-prose font-texto text-xs text-grafite">
+              A classificação roda assim que o XML chega — normalmente é
+              questão de segundos. Atualize a página; se continuar pendente,
+              use o botão abaixo.
+            </p>
             <BotaoProcessar
-              acao={processarUma}
-              rotulo="Processar agora"
+              acao={reprocessarNota}
+              rotulo="Reprocessar"
               documentoId={nota.documentoId}
             />
-            <p className="max-w-prose font-texto text-xs text-grafite">
-              A IA classifica cada item desta nota na base de presunção e lista o
-              resultado abaixo. A execução também entra no histórico do módulo.
-            </p>
           </section>
         ) : null}
 
@@ -98,7 +99,7 @@ export default async function PaginaNotaSc11({
               {nota.erro ?? "Falha ao processar a nota."}
             </div>
             <BotaoProcessar
-              acao={processarUma}
+              acao={reprocessarNota}
               rotulo="Reprocessar"
               documentoId={nota.documentoId}
             />

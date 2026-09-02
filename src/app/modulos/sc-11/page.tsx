@@ -8,11 +8,9 @@ import { HistoricoExecucoes } from "@/components/HistoricoExecucoes";
 import { filtrarModulosVisiveis, obterModulo } from "@/lib/modulos-catalogo";
 import { listarHistorico } from "@/lib/execucao";
 import { listarNotas, listarTermos } from "@/lib/presuncao/consultas-sc11";
-import { processarPendentes } from "@/lib/presuncao/acoes-sc11";
 import { listarClientesParaUpload } from "@/lib/clientes";
 import { FormularioUploadNota } from "@/components/presuncao/FormularioUploadNota";
 import { TabelaNotas } from "@/components/presuncao/TabelaNotas";
-import { BotaoProcessar } from "@/components/documentos/BotaoProcessar";
 
 function contar(qtd: number, singular: string, plural: string): string {
   return `${qtd} ${qtd === 1 ? singular : plural}`;
@@ -100,23 +98,20 @@ export default async function PaginaSc11() {
                 {modulo.nome}
               </h1>
               <p className="mt-3 max-w-xl font-texto text-[15px] leading-relaxed text-nevoa/70">
-                A IA classifica os itens das notas pendentes na base de presunção;
-                os {contar(termos.length, "termo cadastrado", "termos cadastrados")}{" "}
+                A IA classifica os itens de cada nota assim que ela chega; os{" "}
+                {contar(termos.length, "termo cadastrado", "termos cadastrados")}{" "}
                 resolvem os casos recorrentes e o restante cai no modelo.
               </p>
             </div>
 
-            <div className="flex flex-col items-end gap-2">
-              <BotaoProcessar acao={processarPendentes} rotulo="Processar pendentes" tom="escuro" />
-              {sessao.papel === "ADMIN" ? (
-                <Link
-                  href="/modulos/sc-11/termos"
-                  className="font-texto text-sm text-turquesa/90 underline-offset-2 hover:text-turquesa hover:underline"
-                >
-                  Gerenciar termos de presunção →
-                </Link>
-              ) : null}
-            </div>
+            {sessao.papel === "ADMIN" ? (
+              <Link
+                href="/modulos/sc-11/termos"
+                className="font-texto text-sm text-turquesa/90 underline-offset-2 hover:text-turquesa hover:underline"
+              >
+                Gerenciar termos de presunção →
+              </Link>
+            ) : null}
           </div>
 
           <dl className="mt-8 grid max-w-lg grid-cols-3 divide-x divide-white/10 border-y border-white/10">
@@ -131,8 +126,9 @@ export default async function PaginaSc11() {
             <section>
               <h2 className="font-titulo text-lg font-bold text-tinta">Enviar NFS-e</h2>
               <p className="mt-1 max-w-prose font-texto text-sm text-grafite">
-                Anexe o XML da nota de serviço e escolha o cliente. Ela entra na
-                fila como pendente até o processamento.
+                Anexe o XML da nota de serviço e escolha o cliente — a
+                classificação roda na hora e você já abre na nota com o
+                resultado.
               </p>
               <div className="mt-3">
                 <FormularioUploadNota clientes={clientes} />

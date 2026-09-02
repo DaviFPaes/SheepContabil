@@ -2,13 +2,14 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@/generated/prisma/client";
 import { obterSessao } from "@/lib/sessao-servidor";
 import { filtrarModulosVisiveis } from "@/lib/modulos-catalogo";
 import { executarModulo } from "@/lib/execucao";
-import { processarDocumento, processarNotas } from "./processar-sc11";
+import { processarDocumento } from "./processar-sc11";
 import { normalizar, type AliquotaPresuncao } from "./presuncao-termos";
 
 const ROTA = "/modulos/sc-11";
@@ -55,7 +56,7 @@ export async function enviarNota(
   const cliente = await prisma.cliente.findUnique({ where: { id: dados.data.clienteId } });
   if (!cliente) return { erro: "Cliente não encontrado." };
 
-  await prisma.documentoEntrada.create({
+  const doc = await prisma.documentoEntrada.create({
     data: {
       tipo: "NFSE",
       clienteId: dados.data.clienteId,
@@ -67,16 +68,29 @@ export async function enviarNota(
   });
 
   revalidatePath(ROTA);
-  redirect(ROTA);
+
+  // Classifica assim que o upload chega — sem fila manual. `after` (estável no
+  // Next 16) roda o callback depois da resposta ser enviada; se por algum
+  // motivo ele não rodar, o cron mensal (processarNotas) varre os PENDENTE e é
+  // a rede. Mesmo padrão do SC-01 (acoes-sc01.ts, enviarDocumentos).
+  const rodar = async () => {
+    try {
+      await processarDocumento(doc.id);
+    } catch (e) {
+      console.error("[sc-11 auto]", doc.id, e);
+    }
+  };
+  if (typeof after === "function") after(rodar);
+  else void rodar();
+
+  redirect(`${ROTA}/nota/${doc.id}`);
 }
 
-export async function processarPendentes(): Promise<void> {
-  const sessao = await exigirAcessoSc11();
-  await executarModulo("SC-11", sessao.email, () => processarNotas());
-  revalidatePath(ROTA);
-}
-
-export async function processarUma(formData: FormData): Promise<void> {
+// Reprocessa uma nota sob demanda (botão na tela de detalhe) — para quando a
+// classificação automática falhou (XML ilegível, IA fora do ar) ou, mais raro,
+// quando o `after()` do enviarNota não chegou a rodar. Não é o caminho normal:
+// o upload já classifica sozinho.
+export async function reprocessarNota(formData: FormData): Promise<void> {
   const sessao = await exigirAcessoSc11();
   const documentoId = String(formData.get("documentoId") ?? "");
   if (!documentoId) return;
