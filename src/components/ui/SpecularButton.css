@@ -6,7 +6,6 @@
 
 .sb {
   --sb-radius: 10px;
-  --sb-bleed: 14px;
   --sb-glow: 0;
   --sb-mx: 50%;
   --sb-my: 50%;
@@ -14,6 +13,7 @@
 
   position: relative;
   isolation: isolate;
+  overflow: hidden;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -126,13 +126,11 @@
   --sb-rim: var(--color-nevoa);
 }
 
-/* halo que vaza pra fora: elemento maior que o botão, mascarado só na
-   moldura (área do bleed), com o gradiente centrado no cursor. */
+/* brilho especular contido no botão com o gradiente centrado no cursor. */
 .sb__fx {
   position: absolute;
-  inset: calc(-1 * var(--sb-bleed));
-  border-radius: calc(var(--sb-radius) + var(--sb-bleed));
-  padding: var(--sb-bleed);
+  inset: 0;
+  border-radius: inherit;
   pointer-events: none;
   z-index: 1;
   background: radial-gradient(
@@ -143,11 +141,6 @@
   );
   opacity: calc(0.12 + 0.88 * var(--sb-glow));
   transition: opacity 0.3s ease;
-  -webkit-mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
 }
 
 /* filete permanente na borda — o "detalhe" mesmo em repouso */

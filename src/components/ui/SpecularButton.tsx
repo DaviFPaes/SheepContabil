@@ -14,7 +14,6 @@ type Tom = "claro" | "escuro";
 type Tamanho = "sm" | "md" | "lg";
 
 const PROXIMIDADE = 260;
-const BLEED = 14;
 
 // Um único rastreador de ponteiro para TODOS os SpecularButton da página:
 // um listener de pointermove, rects em cache (revalidados no scroll/resize)
@@ -46,8 +45,8 @@ function passo() {
     }
     cache.__sbOn = true;
     el.style.setProperty("--sb-glow", (t * t * (3 - 2 * t)).toFixed(3));
-    el.style.setProperty("--sb-mx", `${ptr.x - r.left + BLEED}px`);
-    el.style.setProperty("--sb-my", `${ptr.y - r.top + BLEED}px`);
+    el.style.setProperty("--sb-mx", `${ptr.x - r.left}px`);
+    el.style.setProperty("--sb-my", `${ptr.y - r.top}px`);
   }
 }
 

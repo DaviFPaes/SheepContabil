@@ -1,8 +1,20 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { render, screen, fireEvent, cleanup } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { SpecularButton } from "./SpecularButton";
 
+const css = readFileSync(join(__dirname, "SpecularButton.css"), "utf8");
+
 afterEach(cleanup);
+
+describe("SpecularButton — brilho contido", () => {
+  it("o CSS prende o brilho no botão e não usa máscara de anel", () => {
+    expect(css).toMatch(/\.sb\s*{[^}]*overflow:\s*hidden/s);
+    expect(css).not.toMatch(/mask-composite/);
+    expect(css).not.toMatch(/inset:\s*calc\(-1 \* var\(--sb-bleed\)\)/);
+  });
+});
 
 describe("SpecularButton", () => {
   it("renderiza um <button> com o rótulo e a classe da variante/tom/tamanho", () => {
