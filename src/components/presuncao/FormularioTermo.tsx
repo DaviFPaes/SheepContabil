@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { criarTermo, type EstadoTermo } from "@/lib/presuncao/acoes-sc11";
+import { SpecularButton } from "@/components/ui/SpecularButton";
 
 // Mesmo recorte de campo do FormularioCertificado (SC-20).
 const CAMPO =
@@ -43,11 +44,7 @@ export function FormularioTermo() {
         </select>
       </label>
 
-      <button
-        type="submit"
-        disabled={pendente}
-        className="inline-flex items-center gap-2 rounded bg-petroleo px-4 py-2 text-sm font-semibold text-nevoa transition-colors hover:bg-turquesa focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-petroleo disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none"
-      >
+      <SpecularButton type="submit" variante="primario" tamanho="sm" disabled={pendente}>
         {pendente ? (
           <svg
             aria-hidden="true"
@@ -86,7 +83,7 @@ export function FormularioTermo() {
           </svg>
         )}
         {pendente ? "Adicionando…" : "Adicionar"}
-      </button>
+      </SpecularButton>
 
       {estado?.erro ? (
         <p
