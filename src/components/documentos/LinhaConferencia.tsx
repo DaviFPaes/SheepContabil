@@ -51,12 +51,12 @@ export function LinhaConferencia({
   return (
     <form
       action={acaoFormulario}
-      className="overflow-hidden rounded-lg border border-l-2 border-grafite/20 border-l-ambar bg-white shadow-sm"
+      className="overflow-hidden rounded-xl border border-l-2 border-grafite/20 border-l-ambar bg-white"
     >
       <input type="hidden" name="lancamentoId" value={lancamento.id} />
 
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 border-b border-grafite/15 bg-nevoa/60 px-4 py-2.5">
-        <span className="font-texto text-xs font-semibold uppercase tracking-wide text-grafite">
+        <span className="font-texto text-xs uppercase tracking-wide text-grafite">
           Linha em conferência
         </span>
         <MedidorConfianca confianca={lancamento.confianca} />
@@ -64,7 +64,7 @@ export function LinhaConferencia({
 
       <div className="grid gap-px bg-grafite/15 md:grid-cols-2">
         <div className="bg-nevoa/70 p-4">
-          <span className="font-texto text-xs font-semibold uppercase tracking-wide text-grafite">
+          <span className="font-texto text-xs uppercase tracking-wide text-grafite">
             Trecho do extrato
           </span>
           {lancamento.trechoOriginal ? (

@@ -9,8 +9,7 @@ import {
 import { LinhaConferencia } from "./LinhaConferencia";
 
 const CELULA = "px-4 py-3 align-middle";
-const TH =
-  "px-4 py-2.5 font-texto text-xs font-semibold uppercase tracking-wide text-grafite";
+const TH = "px-4 py-2.5 font-texto text-xs uppercase tracking-wide text-grafite";
 
 const BADGE_STATUS: Record<StatusConferencia, { rotulo: string; classe: string }> =
   {
@@ -48,7 +47,7 @@ export function PainelLancamentos({
     return (
       <div
         role="alert"
-        className="flex items-start gap-3 rounded-lg border border-carmim/30 bg-carmim/10 p-4 font-texto text-sm text-carmim shadow-sm"
+        className="flex items-start gap-3 rounded-xl border border-carmim/30 bg-carmim/10 p-4 font-texto text-sm text-carmim"
       >
         <svg
           aria-hidden="true"
@@ -76,7 +75,7 @@ export function PainelLancamentos({
 
   if (documento.lancamentos.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-2 rounded-lg border border-grafite/20 bg-white px-6 py-10 text-center shadow-sm">
+      <div className="flex flex-col items-center gap-2 rounded-xl border border-grafite/20 bg-white px-6 py-12 text-center">
         <svg
           aria-hidden="true"
           viewBox="0 0 24 24"
@@ -108,7 +107,7 @@ export function PainelLancamentos({
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="overflow-hidden rounded-lg border border-grafite/20 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-xl border border-grafite/20 bg-white">
         <div className="overflow-x-auto">
           <table className="w-full border-collapse font-texto text-sm">
             <caption className="sr-only">
@@ -175,21 +174,14 @@ export function PainelLancamentos({
 
       {emConferencia.length > 0 ? (
         <section>
-          <div className="mb-3">
-            <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1.5">
-              <h3 className="font-titulo text-lg font-bold text-tinta">
-                Conferência
-              </h3>
-              <span className="font-codigo text-xs tabular-nums text-grafite">
-                {emConferencia.length}{" "}
-                {emConferencia.length === 1 ? "linha" : "linhas"} para revisar
-              </span>
-            </div>
-            <p className="mt-1 max-w-prose font-texto text-sm text-grafite">
-              Compare o trecho do extrato com o que a IA leu. Ajuste o que estiver
-              errado e confirme — o OFX só libera quando todas as linhas estiverem
-              conferidas.
-            </p>
+          <div className="mb-3 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1.5">
+            <h3 className="font-titulo text-lg font-bold text-tinta">
+              Conferência
+            </h3>
+            <span className="font-codigo text-xs tabular-nums text-grafite">
+              {emConferencia.length}{" "}
+              {emConferencia.length === 1 ? "linha" : "linhas"} para revisar
+            </span>
           </div>
           <div className="flex flex-col gap-4">
             {emConferencia.map((lancamento) => (
