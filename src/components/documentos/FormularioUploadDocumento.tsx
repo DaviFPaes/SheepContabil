@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { enviarDocumento, type EstadoUpload } from "@/lib/documentos/acoes-sc01";
+import { SpecularButton } from "@/components/ui/SpecularButton";
 
 type Cliente = { id: string; razaoSocial: string };
 type Conta = { id: string; rotulo: string };
@@ -88,11 +89,7 @@ export function FormularioUploadDocumento({
         />
       </label>
 
-      <button
-        type="submit"
-        disabled={pendente}
-        className="inline-flex items-center gap-2 rounded bg-petroleo px-4 py-2 text-sm font-semibold text-nevoa transition-colors hover:bg-turquesa focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-petroleo disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none"
-      >
+      <SpecularButton type="submit" variante="primario" tamanho="sm" disabled={pendente}>
         {pendente ? (
           <svg
             aria-hidden="true"
@@ -100,20 +97,8 @@ export function FormularioUploadDocumento({
             fill="none"
             className="h-4 w-4 animate-spin motion-reduce:animate-none"
           >
-            <circle
-              cx="12"
-              cy="12"
-              r="9"
-              stroke="currentColor"
-              strokeOpacity="0.3"
-              strokeWidth="3"
-            />
-            <path
-              d="M21 12a9 9 0 0 0-9-9"
-              stroke="currentColor"
-              strokeWidth="3"
-              strokeLinecap="round"
-            />
+            <circle cx="12" cy="12" r="9" stroke="currentColor" strokeOpacity="0.3" strokeWidth="3" />
+            <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
           </svg>
         ) : (
           <svg
@@ -132,7 +117,7 @@ export function FormularioUploadDocumento({
           </svg>
         )}
         {pendente ? "Enviando…" : "Enviar para a fila"}
-      </button>
+      </SpecularButton>
 
       {estado?.erro ? (
         <p

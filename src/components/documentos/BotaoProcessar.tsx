@@ -1,6 +1,7 @@
 "use client";
 
 import { useFormStatus } from "react-dom";
+import { SpecularButton } from "@/components/ui/SpecularButton";
 
 // Mesmo motivo do BotaoAtualizar (SC-20): fica DENTRO do <form action={acao}>
 // so para ler o status de envio e, enquanto `pending`, desabilitar + trocar o
@@ -10,15 +11,23 @@ import { useFormStatus } from "react-dom";
 
 type AcaoFormulario = (formData: FormData) => void | Promise<void>;
 
-function Disparador({ rotulo }: { rotulo: string }) {
+function Disparador({
+  rotulo,
+  tom = "claro",
+}: {
+  rotulo: string;
+  tom?: "claro" | "escuro";
+}) {
   const { pending } = useFormStatus();
 
   return (
-    <button
+    <SpecularButton
       type="submit"
+      variante="primario"
+      tom={tom}
+      tamanho="sm"
       disabled={pending}
       aria-disabled={pending}
-      className="inline-flex items-center gap-2 rounded bg-petroleo px-4 py-2 font-texto text-sm font-semibold text-nevoa transition-colors hover:bg-turquesa focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-petroleo disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none"
     >
       {pending ? (
         <svg
@@ -27,20 +36,8 @@ function Disparador({ rotulo }: { rotulo: string }) {
           fill="none"
           className="h-4 w-4 animate-spin motion-reduce:animate-none"
         >
-          <circle
-            cx="12"
-            cy="12"
-            r="9"
-            stroke="currentColor"
-            strokeOpacity="0.3"
-            strokeWidth="3"
-          />
-          <path
-            d="M21 12a9 9 0 0 0-9-9"
-            stroke="currentColor"
-            strokeWidth="3"
-            strokeLinecap="round"
-          />
+          <circle cx="12" cy="12" r="9" stroke="currentColor" strokeOpacity="0.3" strokeWidth="3" />
+          <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
         </svg>
       ) : (
         <svg
@@ -58,7 +55,7 @@ function Disparador({ rotulo }: { rotulo: string }) {
         </svg>
       )}
       {pending ? "Processando…" : rotulo}
-    </button>
+    </SpecularButton>
   );
 }
 
@@ -66,17 +63,19 @@ export function BotaoProcessar({
   acao,
   rotulo,
   documentoId,
+  tom = "claro",
 }: {
   acao: AcaoFormulario;
   rotulo: string;
   documentoId?: string;
+  tom?: "claro" | "escuro";
 }) {
   return (
     <form action={acao}>
       {documentoId ? (
         <input type="hidden" name="documentoId" value={documentoId} />
       ) : null}
-      <Disparador rotulo={rotulo} />
+      <Disparador rotulo={rotulo} tom={tom} />
     </form>
   );
 }

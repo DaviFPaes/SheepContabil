@@ -1,8 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { SpecularButton } from "@/components/ui/SpecularButton";
 
 export type Visao = "tabela" | "kanban";
+
+const ROTULO: Record<Visao, string> = { kanban: "Kanban", tabela: "Tabela" };
 
 const CHAVE = "sc20:visao";
 
@@ -34,9 +37,10 @@ export function AlternadorVisao({
   visaoUrl: Visao | null;
   aoMudar: (v: Visao) => void;
 }) {
-  // Primeiro render alinhado com o SSR: usa a URL ou "tabela". O ajuste
-  // pelo localStorage acontece no efeito abaixo, ja no cliente.
-  const [visao, setVisao] = useState<Visao>(visaoUrl ?? "tabela");
+  // Primeiro render alinhado com o SSR: usa a URL ou "kanban" (visao
+  // padrao do modulo). O ajuste pelo localStorage acontece no efeito
+  // abaixo, ja no cliente.
+  const [visao, setVisao] = useState<Visao>(visaoUrl ?? "kanban");
 
   useEffect(() => {
     if (visaoUrl) {
@@ -64,27 +68,19 @@ export function AlternadorVisao({
   }
 
   return (
-    <div
-      role="group"
-      aria-label="Alternar visão"
-      className="inline-flex rounded-lg border border-grafite/25 bg-nevoa p-0.5 font-texto text-sm"
-    >
-      {(["tabela", "kanban"] as const).map((v) => {
+    <div role="group" aria-label="Alternar visão" className="inline-flex gap-1.5">
+      {(["kanban", "tabela"] as const).map((v) => {
         const ativo = v === visao;
         return (
-          <button
+          <SpecularButton
             key={v}
-            type="button"
+            variante={ativo ? "primario" : "fantasma"}
+            tamanho="sm"
             aria-pressed={ativo}
             onClick={() => escolher(v)}
-            className={`rounded-md px-3 py-1.5 font-medium capitalize transition-colors motion-reduce:transition-none ${
-              ativo
-                ? "bg-petroleo text-nevoa shadow-sm"
-                : "text-grafite hover:text-tinta"
-            }`}
           >
-            {v}
-          </button>
+            {ROTULO[v]}
+          </SpecularButton>
         );
       })}
     </div>

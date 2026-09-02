@@ -14,7 +14,13 @@ vi.mock("@/lib/sessao-servidor", () => ({
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 
 import { prisma } from "@/lib/prisma";
-import { criarCertificado, marcarGrupoLido } from "./acoes";
+import {
+  avisarClienteD3,
+  criarCertificado,
+  enviarAvisosLote,
+  marcarGrupoLido,
+  renovarCertificadoVencido,
+} from "./acoes";
 
 const CNPJ = "77.777.777/0001-70";
 
@@ -147,6 +153,186 @@ describe("criarCertificado", () => {
     });
     const tiposAcao = acoes.map((a) => a.acao).sort();
     expect(tiposAcao).toEqual(["DESATIVADO", "RENOVACAO"]);
+  });
+});
+
+describe("renovarCertificadoVencido", () => {
+  async function certVencido() {
+    const cliente = await clienteTeste();
+    const cert = await prisma.certificado.create({
+      data: {
+        clienteId: cliente.id,
+        tipo: "ECNPJ",
+        titular: "Empresa",
+        emitidoEm: new Date(dataISO(-400)),
+        dataValidade: new Date(dataISO(-10)),
+        bucket: "VENCIDO",
+      },
+    });
+    return { cliente, cert };
+  }
+
+  it("com data futura: cria o novo certificado, vincula, desativa o antigo e audita as duas pontas", async () => {
+    const { cert } = await certVencido();
+
+    const r = await renovarCertificadoVencido(cert.id, dataISO(365));
+    expect(r).toEqual({ ok: true });
+
+    const antigo = await prisma.certificado.findUniqueOrThrow({ where: { id: cert.id } });
+    expect(antigo.ativo).toBe(false);
+    expect(antigo.bucket).toBe("RENOVADO");
+    expect(antigo.substituidoPorId).not.toBeNull();
+    expect(antigo.renovadoEm).not.toBeNull();
+
+    const novo = await prisma.certificado.findUniqueOrThrow({
+      where: { id: antigo.substituidoPorId! },
+    });
+    expect(novo.dataValidade.toISOString().slice(0, 10)).toBe(dataISO(365));
+    expect(novo.ativo).toBe(true);
+
+    const acoesAntigo = (
+      await prisma.registroAuditoria.findMany({ where: { entidadeId: cert.id } })
+    )
+      .map((a) => a.acao)
+      .sort();
+    expect(acoesAntigo).toEqual(["DESATIVADO", "RENOVACAO"]);
+    const criado = await prisma.registroAuditoria.findFirst({
+      where: { entidadeId: novo.id, acao: "CRIADO" },
+    });
+    expect(criado).not.toBeNull();
+  });
+
+  it("com data no passado: acusa a falha e nao move o certificado", async () => {
+    const { cert } = await certVencido();
+
+    const r = await renovarCertificadoVencido(cert.id, dataISO(-2));
+    expect(r).toEqual({ erro: expect.stringMatching(/futura/i) });
+
+    const antigo = await prisma.certificado.findUniqueOrThrow({ where: { id: cert.id } });
+    expect(antigo.ativo).toBe(true);
+    expect(antigo.substituidoPorId).toBeNull();
+  });
+
+  it("recusa certificado que nao esta vencido", async () => {
+    const cliente = await clienteTeste();
+    const cert = await prisma.certificado.create({
+      data: {
+        clienteId: cliente.id,
+        tipo: "ECNPJ",
+        titular: "Empresa",
+        emitidoEm: new Date(dataISO(-350)),
+        dataValidade: new Date(dataISO(30)),
+        bucket: "D60",
+      },
+    });
+
+    const r = await renovarCertificadoVencido(cert.id, dataISO(365));
+    expect(r).toEqual({ erro: expect.stringMatching(/vencid/i) });
+  });
+});
+
+describe("avisarClienteD3", () => {
+  async function certD3() {
+    const cliente = await clienteTeste();
+    const cert = await prisma.certificado.create({
+      data: {
+        clienteId: cliente.id,
+        tipo: "ECNPJ",
+        titular: "Empresa",
+        emitidoEm: new Date(dataISO(-360)),
+        dataValidade: new Date(dataISO(2)),
+        bucket: "D3",
+      },
+    });
+    return { cliente, cert };
+  }
+
+  it("marca avisoD3Em e grava auditoria de aviso enviado", async () => {
+    const { cert } = await certD3();
+
+    const r = await avisarClienteD3(cert.id);
+    expect(r).toEqual({ ok: true });
+
+    const atualizado = await prisma.certificado.findUniqueOrThrow({ where: { id: cert.id } });
+    expect(atualizado.avisoD3Em).not.toBeNull();
+
+    const audit = await prisma.registroAuditoria.findMany({
+      where: { entidadeId: cert.id, acao: "AVISO_ENVIADO" },
+    });
+    expect(audit).toHaveLength(1);
+  });
+
+  it("recusa certificado que nao esta na faixa de 3 dias", async () => {
+    const cliente = await clienteTeste();
+    const cert = await prisma.certificado.create({
+      data: {
+        clienteId: cliente.id,
+        tipo: "ECNPJ",
+        titular: "Empresa",
+        emitidoEm: new Date(dataISO(-350)),
+        dataValidade: new Date(dataISO(30)),
+        bucket: "D60",
+      },
+    });
+
+    const r = await avisarClienteD3(cert.id);
+    expect(r).toEqual({ erro: expect.any(String) });
+
+    const atualizado = await prisma.certificado.findUniqueOrThrow({ where: { id: cert.id } });
+    expect(atualizado.avisoD3Em).toBeNull();
+  });
+});
+
+describe("enviarAvisosLote", () => {
+  async function certD60(clienteId: string, titular: string) {
+    return prisma.certificado.create({
+      data: {
+        clienteId,
+        tipo: "ECNPJ",
+        titular,
+        emitidoEm: new Date(dataISO(-330)),
+        dataValidade: new Date(dataISO(40)),
+        bucket: "D60",
+      },
+    });
+  }
+
+  it("cria AvisoCertificado SENT e auditoria para cada certificado do marco", async () => {
+    const cliente = await clienteTeste();
+    const a = await certD60(cliente.id, "A");
+    const b = await certD60(cliente.id, "B");
+
+    const r = await enviarAvisosLote("D60", [a.id, b.id]);
+    expect(r).toEqual({ enviados: 2 });
+
+    const avisos = await prisma.avisoCertificado.findMany({
+      where: { certificadoId: { in: [a.id, b.id] }, marco: "D60" },
+    });
+    expect(avisos).toHaveLength(2);
+    expect(avisos.every((x) => x.status === "SENT")).toBe(true);
+
+    const audit = await prisma.registroAuditoria.findMany({
+      where: { entidadeId: { in: [a.id, b.id] }, acao: "AVISO_ENVIADO" },
+    });
+    expect(audit).toHaveLength(2);
+  });
+
+  it("nao reenvia para quem ja foi avisado com sucesso", async () => {
+    const cliente = await clienteTeste();
+    const a = await certD60(cliente.id, "C");
+    await prisma.avisoCertificado.create({
+      data: {
+        certificadoId: a.id,
+        clienteId: a.clienteId,
+        marco: "D60",
+        destinatarioEmail: "c@example.com",
+        status: "DELIVERED",
+        enviadoEm: new Date(),
+      },
+    });
+
+    const r = await enviarAvisosLote("D60", [a.id]);
+    expect(r).toEqual({ enviados: 0 });
   });
 });
 

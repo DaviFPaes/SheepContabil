@@ -10,6 +10,7 @@ function certificado(bucket: CertificadoLinha["bucket"]): CertificadoLinha {
     clienteId: "cli-1",
     razaoSocial: "Clínica Exemplo Ltda",
     clienteEmail: "contato@clinica.example",
+    clienteTelefone: null,
     titular: "Clínica Exemplo Ltda",
     tipo: "ECNPJ",
     dataValidade: new Date("2026-10-01T00:00:00Z"),
@@ -18,6 +19,7 @@ function certificado(bucket: CertificadoLinha["bucket"]): CertificadoLinha {
     bucket,
     ativo: true,
     renovadoEm: null,
+    avisoD3Em: null,
     avisoD60: null,
     avisoD7: null,
   };

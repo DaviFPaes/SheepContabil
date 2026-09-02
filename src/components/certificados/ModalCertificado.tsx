@@ -8,9 +8,10 @@ import {
 } from "@/lib/certificados/acoes";
 import type { CertificadoLinha } from "@/lib/certificados/consultas";
 import { dataParaInput } from "@/lib/certificados/formato";
+import { SpecularButton } from "@/components/ui/SpecularButton";
 import { Modal } from "./Modal";
 
-type ClienteOpcao = { id: string; razaoSocial: string };
+type ClienteOpcao = { id: string; razaoSocial: string; telefone?: string | null };
 type CertificadoOpcao = { id: string; titular: string; dataValidade: Date };
 
 const CAMPO =
@@ -48,6 +49,11 @@ export function ModalCertificado({
     for (const c of clientes) m.set(c.razaoSocial.toLowerCase(), c.id);
     return m;
   }, [clientes]);
+  const telefonePorId = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const c of clientes) if (c.telefone) m.set(c.id, c.telefone);
+    return m;
+  }, [clientes]);
 
   const [textoCliente, setTextoCliente] = useState(certificado?.razaoSocial ?? "");
   const [ehRenovacao, setEhRenovacao] = useState(false);
@@ -60,6 +66,14 @@ export function ModalCertificado({
   }, [estado, aoFechar]);
 
   const clienteId = clientePorRazao.get(textoCliente.trim().toLowerCase()) ?? "";
+
+  // Telefone acompanha o cliente escolhido (ajuste de estado no render).
+  const [telefone, setTelefone] = useState("");
+  const [clienteTelAnterior, setClienteTelAnterior] = useState<string | null>(null);
+  if (clienteId !== clienteTelAnterior) {
+    setClienteTelAnterior(clienteId);
+    setTelefone(telefonePorId.get(clienteId) ?? "");
+  }
   const anteriores = clienteId ? (certificadosPorCliente[clienteId] ?? []) : [];
   const diasValidade = diasAte(validadeIso);
   const alertaJanela = diasValidade !== null && diasValidade <= 60;
@@ -90,6 +104,22 @@ export function ModalCertificado({
               <option key={c.id} value={c.razaoSocial} />
             ))}
           </datalist>
+        </label>
+
+        <label className={ROTULO} htmlFor="mc-telefone">
+          <span className={ROTULO_TEXTO}>Telefone do cliente (WhatsApp)</span>
+          <input
+            id="mc-telefone"
+            name="telefone"
+            type="tel"
+            value={telefone}
+            onChange={(e) => setTelefone(e.target.value)}
+            placeholder="+55 (11) 90000-0000"
+            className={CAMPO}
+          />
+          <span className="font-texto text-xs text-grafite">
+            Salvo no cadastro do cliente — usado no aviso da faixa de 3 dias.
+          </span>
         </label>
 
         <div className="grid gap-4 sm:grid-cols-2">
@@ -197,21 +227,13 @@ export function ModalCertificado({
           </p>
         ) : null}
 
-        <div className="flex items-center justify-end gap-3">
-          <button
-            type="button"
-            onClick={aoFechar}
-            className="font-texto text-sm text-grafite underline underline-offset-2 hover:text-tinta"
-          >
+        <div className="flex items-center justify-end gap-2.5">
+          <SpecularButton variante="fantasma" tamanho="sm" onClick={aoFechar}>
             Cancelar
-          </button>
-          <button
-            type="submit"
-            disabled={pendente}
-            className="rounded bg-petroleo px-4 py-2 font-texto text-sm font-semibold text-nevoa transition-colors hover:bg-turquesa disabled:opacity-60 motion-reduce:transition-none"
-          >
+          </SpecularButton>
+          <SpecularButton type="submit" variante="primario" tamanho="sm" disabled={pendente}>
             {emEdicao ? (pendente ? "Salvando…" : "Salvar") : pendente ? "Adicionando…" : "Adicionar"}
-          </button>
+          </SpecularButton>
         </div>
       </form>
     </Modal>

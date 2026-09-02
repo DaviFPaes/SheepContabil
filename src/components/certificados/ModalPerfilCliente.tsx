@@ -11,7 +11,14 @@ import { SeloBucket } from "./SeloBucket";
 import { TimelineHistorico } from "./TimelineHistorico";
 
 type Perfil = {
-  cliente: { id: string; razaoSocial: string; cnpj: string; email: string; ativo: boolean };
+  cliente: {
+    id: string;
+    razaoSocial: string;
+    cnpj: string;
+    email: string;
+    telefone: string | null;
+    ativo: boolean;
+  };
   certificados: CertificadoLinha[];
   historico: LinhaAuditoria[];
 };
@@ -67,6 +74,9 @@ export function ModalPerfilCliente({
             </div>
             <p className="mt-1 font-codigo text-xs text-grafite">
               {estado.perfil.cliente.cnpj} · {estado.perfil.cliente.email}
+              {estado.perfil.cliente.telefone
+                ? ` · ${estado.perfil.cliente.telefone}`
+                : " · sem telefone"}
             </p>
           </div>
 

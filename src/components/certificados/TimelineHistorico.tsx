@@ -6,10 +6,10 @@ import {
 } from "@/lib/certificados/historico";
 import { formatarDataUTC } from "@/lib/certificados/formato";
 
-const ACENTO_CLASSE: Record<"turquesa" | "ambar" | "carmim", string> = {
-  turquesa: "border-l-turquesa",
-  ambar: "border-l-ambar",
-  carmim: "border-l-carmim",
+const NO_COR: Record<"turquesa" | "ambar" | "carmim", string> = {
+  turquesa: "bg-turquesa",
+  ambar: "bg-ambar",
+  carmim: "bg-carmim",
 };
 
 function horaUTC(data: Date): string {
@@ -25,51 +25,58 @@ function valorLegivel(v: unknown): string {
 export function TimelineHistorico({ linhas }: { linhas: LinhaAuditoria[] }) {
   if (linhas.length === 0) {
     return (
-      <div className="rounded-lg border border-grafite/20 bg-white px-6 py-10 text-center shadow-sm">
-        <p className="font-titulo text-sm font-bold text-tinta">
-          Nada registrado ainda
-        </p>
+      <div className="rounded-xl border border-grafite/15 bg-white px-6 py-12 text-center">
+        <p className="font-titulo text-sm font-bold text-tinta">Nada registrado ainda</p>
         <p className="mt-1 font-texto text-sm text-grafite">
-          Toda criação, edição, transição de faixa, aviso e execução de
-          &ldquo;Atualizar&rdquo; aparece aqui.
+          Criação, edição, transição de faixa, aviso e renovação de cada
+          certificado aparecem aqui.
         </p>
       </div>
     );
   }
 
   return (
-    <ul className="flex flex-col gap-3">
+    <ol className="relative ml-1 flex flex-col gap-3 border-l border-grafite/25 pl-6">
       {linhas.map((linha) => {
         const mudancas = camposAlterados(linha.dadosAntes, linha.dadosDepois);
         return (
-          <li
-            key={linha.id}
-            className={`rounded-lg border border-l-2 border-grafite/20 bg-white p-4 shadow-sm ${ACENTO_CLASSE[ACENTO_ACAO[linha.acao]]}`}
-          >
-            <div className="mb-1.5 flex flex-wrap items-start justify-between gap-x-3 gap-y-1">
-              <span className="font-texto text-sm text-tinta">{linha.descricao}</span>
-              <time
-                dateTime={linha.criadoEm.toISOString()}
-                className="font-codigo text-xs tabular-nums text-grafite"
-              >
-                {formatarDataUTC(linha.criadoEm)} {horaUTC(linha.criadoEm)}
-              </time>
+          <li key={linha.id} className="relative">
+            <span
+              aria-hidden="true"
+              className={`absolute -left-[1.7rem] top-3 h-2.5 w-2.5 rounded-full ring-[3px] ring-nevoa ${NO_COR[ACENTO_ACAO[linha.acao]]}`}
+            />
+            <div className="rounded-xl border border-grafite/15 bg-white p-3.5">
+              <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+                <span className="font-texto text-sm text-tinta">{linha.descricao}</span>
+                <time
+                  dateTime={linha.criadoEm.toISOString()}
+                  className="font-codigo text-xs tabular-nums text-grafite"
+                >
+                  {formatarDataUTC(linha.criadoEm)} · {horaUTC(linha.criadoEm)}
+                </time>
+              </div>
+
+              {mudancas.length > 0 ? (
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {mudancas.map((m) => (
+                    <span
+                      key={m.campo}
+                      className="inline-flex items-center gap-1 rounded bg-nevoa px-1.5 py-0.5 font-codigo text-[11px] text-grafite"
+                    >
+                      <span className="font-medium text-tinta">{m.campo}:</span>{" "}
+                      {valorLegivel(m.de)} → {valorLegivel(m.para)}
+                    </span>
+                  ))}
+                </div>
+              ) : null}
+
+              <p className="mt-1.5 font-codigo text-[11px] uppercase tracking-wide text-grafite/70">
+                {rotuloAtor(linha.autorEmail)}
+              </p>
             </div>
-
-            {mudancas.length > 0 ? (
-              <ul className="mb-1.5 flex flex-col gap-0.5">
-                {mudancas.map((m) => (
-                  <li key={m.campo} className="font-codigo text-xs text-grafite">
-                    {`${m.campo}: ${valorLegivel(m.de)} → ${valorLegivel(m.para)}`}
-                  </li>
-                ))}
-              </ul>
-            ) : null}
-
-            <p className="font-codigo text-xs text-grafite">{rotuloAtor(linha.autorEmail)}</p>
           </li>
         );
       })}
-    </ul>
+    </ol>
   );
 }

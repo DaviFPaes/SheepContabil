@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@/generated/prisma/client";
 import {
   contarNaoAvisados,
+  estadoContato,
   listarCertificados,
   listarClientesParaSelecao,
   listarHistorico,
@@ -61,6 +62,7 @@ function linha(over: Partial<CertificadoLinha> = {}): CertificadoLinha {
     clienteId: "cl1",
     razaoSocial: "Alfa Ltda",
     clienteEmail: "alfa@example.com",
+    clienteTelefone: "+55 51 99999-0001",
     titular: "Alfa Ltda",
     tipo: "ECNPJ",
     dataValidade: new Date("2026-09-20T00:00:00Z"),
@@ -69,6 +71,7 @@ function linha(over: Partial<CertificadoLinha> = {}): CertificadoLinha {
     bucket: "D60",
     ativo: true,
     renovadoEm: null,
+    avisoD3Em: null,
     avisoD60: null,
     avisoD7: null,
     ...over,
@@ -76,85 +79,101 @@ function linha(over: Partial<CertificadoLinha> = {}): CertificadoLinha {
 }
 
 describe("montarColunasKanban (puro)", () => {
-  it("D60 sem avisoD60 vai para 'a avisar 60'", () => {
-    const c = montarColunasKanban([linha({ bucket: "D60", avisoD60: null })], HOJE);
-    expect(c.aAvisar60).toHaveLength(1);
-    expect(c.avisado60).toHaveLength(0);
+  it("D60 — avisado ou nao — cai na coluna unica 'd60'", () => {
+    const c = montarColunasKanban([
+      linha({ id: "a", bucket: "D60", avisoD60: null }),
+      linha({ id: "b", bucket: "D60", avisoD60: { status: "SENT", enviadoEm: HOJE } }),
+      linha({ id: "c", bucket: "D60", avisoD60: { status: "BOUNCED", enviadoEm: HOJE } }),
+    ]);
+    expect(c.d60).toHaveLength(3);
   });
 
-  it("D60 com avisoD60 SENT vai para 'avisado 60'", () => {
-    const c = montarColunasKanban(
-      [linha({ bucket: "D60", avisoD60: { status: "SENT", enviadoEm: HOJE } })],
-      HOJE,
-    );
-    expect(c.avisado60).toHaveLength(1);
-    expect(c.aAvisar60).toHaveLength(0);
-  });
-
-  it("D60 com avisoD60 BOUNCED continua em 'a avisar 60'", () => {
-    const c = montarColunasKanban(
-      [linha({ bucket: "D60", avisoD60: { status: "BOUNCED", enviadoEm: HOJE } })],
-      HOJE,
-    );
-    expect(c.aAvisar60).toHaveLength(1);
-  });
-
-  it("D7 sem avisoD7 vai para 'a avisar 7'; com DELIVERED vai para 'avisado 7'", () => {
-    const semAviso = montarColunasKanban([linha({ bucket: "D7", avisoD7: null })], HOJE);
-    expect(semAviso.aAvisar7).toHaveLength(1);
-
-    const comAviso = montarColunasKanban(
-      [linha({ bucket: "D7", avisoD7: { status: "DELIVERED", enviadoEm: HOJE } })],
-      HOJE,
-    );
-    expect(comAviso.avisado7).toHaveLength(1);
+  it("D7 cai na coluna unica 'd7'", () => {
+    const c = montarColunasKanban([
+      linha({ id: "a", bucket: "D7", avisoD7: null }),
+      linha({ id: "b", bucket: "D7", avisoD7: { status: "DELIVERED", enviadoEm: HOJE } }),
+    ]);
+    expect(c.d7).toHaveLength(2);
   });
 
   it("D3 vai para 'confirmar3'", () => {
-    const c = montarColunasKanban([linha({ bucket: "D3" })], HOJE);
+    const c = montarColunasKanban([linha({ bucket: "D3" })]);
     expect(c.confirmar3).toHaveLength(1);
   });
 
   it("VENCIDO vai para 'vencido'", () => {
-    const c = montarColunasKanban([linha({ bucket: "VENCIDO", diasRestantes: -1 })], HOJE);
+    const c = montarColunasKanban([linha({ bucket: "VENCIDO", diasRestantes: -1 })]);
     expect(c.vencido).toHaveLength(1);
   });
 
-  it("RENOVADO com renovadoEm ha 3 dias aparece; ha 10 dias nao", () => {
-    const recente = montarColunasKanban(
-      [linha({ bucket: "RENOVADO", renovadoEm: new Date("2026-08-29T12:00:00Z") })],
-      HOJE,
-    );
-    expect(recente.renovado).toHaveLength(1);
-
-    const antigo = montarColunasKanban(
-      [linha({ bucket: "RENOVADO", renovadoEm: new Date("2026-08-20T12:00:00Z") })],
-      HOJE,
-    );
-    expect(antigo.renovado).toHaveLength(0);
+  it("RENOVADO e OK nao aparecem em nenhuma coluna do Kanban", () => {
+    const c = montarColunasKanban([
+      linha({ bucket: "RENOVADO", renovadoEm: new Date("2026-08-29T12:00:00Z") }),
+      linha({ bucket: "OK", diasRestantes: 90 }),
+    ]);
+    const total =
+      c.d60.length + c.d7.length + c.confirmar3.length + c.vencido.length;
+    expect(total).toBe(0);
   });
 
-  it("OK nao aparece em nenhuma coluna do Kanban", () => {
-    const c = montarColunasKanban([linha({ bucket: "OK", diasRestantes: 90 })], HOJE);
-    const total =
-      c.aAvisar60.length +
-      c.avisado60.length +
-      c.aAvisar7.length +
-      c.avisado7.length +
-      c.confirmar3.length +
-      c.vencido.length +
-      c.renovado.length;
-    expect(total).toBe(0);
+  it("ordena os cards: 'recentes' = quem tem mais dias restantes primeiro; 'antigos' inverte", () => {
+    const cards = [
+      linha({ id: "a", bucket: "D7", diasRestantes: 4 }),
+      linha({ id: "b", bucket: "D7", diasRestantes: 7 }),
+      linha({ id: "c", bucket: "D7", diasRestantes: 5 }),
+    ];
+    expect(montarColunasKanban(cards, "recentes").d7.map((l) => l.id)).toEqual([
+      "b",
+      "c",
+      "a",
+    ]);
+    expect(montarColunasKanban(cards, "antigos").d7.map((l) => l.id)).toEqual([
+      "a",
+      "c",
+      "b",
+    ]);
+  });
+});
+
+describe("estadoContato (puro)", () => {
+  it("D60 sem aviso = pendente; com SENT = avisado; com BOUNCED = falhou", () => {
+    expect(estadoContato(linha({ bucket: "D60", avisoD60: null }))).toBe("pendente");
+    expect(
+      estadoContato(linha({ bucket: "D60", avisoD60: { status: "SENT", enviadoEm: HOJE } })),
+    ).toBe("avisado");
+    expect(
+      estadoContato(linha({ bucket: "D60", avisoD60: { status: "BOUNCED", enviadoEm: HOJE } })),
+    ).toBe("falhou");
+  });
+
+  it("D7 usa avisoD7", () => {
+    expect(
+      estadoContato(linha({ bucket: "D7", avisoD7: { status: "DELIVERED", enviadoEm: HOJE } })),
+    ).toBe("avisado");
+    expect(estadoContato(linha({ bucket: "D7", avisoD7: null }))).toBe("pendente");
+  });
+
+  it("D3 usa avisoD3Em", () => {
+    expect(estadoContato(linha({ bucket: "D3", avisoD3Em: null }))).toBe("pendente");
+    expect(estadoContato(linha({ bucket: "D3", avisoD3Em: HOJE }))).toBe("avisado");
+  });
+
+  it("buckets sem contato (VENCIDO, RENOVADO, OK) devolvem null", () => {
+    expect(estadoContato(linha({ bucket: "VENCIDO" }))).toBeNull();
+    expect(estadoContato(linha({ bucket: "RENOVADO" }))).toBeNull();
+    expect(estadoContato(linha({ bucket: "OK" }))).toBeNull();
   });
 });
 
 describe("contarNaoAvisados", () => {
-  it("conta os cards das colunas 'a avisar'", () => {
-    const c = montarColunasKanban(
-      [linha({ bucket: "D60", avisoD60: null }), linha({ id: "c2", bucket: "D7", avisoD7: null })],
-      HOJE,
-    );
-    expect(contarNaoAvisados(c)).toEqual({ d60: 1, d7: 1 });
+  it("conta em d60/d7 os cards ainda nao avisados (pendente ou falhou)", () => {
+    const c = montarColunasKanban([
+      linha({ id: "a", bucket: "D60", avisoD60: null }),
+      linha({ id: "b", bucket: "D60", avisoD60: { status: "SENT", enviadoEm: HOJE } }),
+      linha({ id: "c", bucket: "D60", avisoD60: { status: "BOUNCED", enviadoEm: HOJE } }),
+      linha({ id: "d", bucket: "D7", avisoD7: null }),
+    ]);
+    expect(contarNaoAvisados(c)).toEqual({ d60: 2, d7: 1 });
   });
 });
 

@@ -3,7 +3,12 @@ import type { Prisma, TipoCertificado, TipoNotificacao } from "@/generated/prism
 import { calcularBucket, diasRestantes, type Bucket } from "./bucket";
 import type { AcaoAuditoria, LinhaAuditoria } from "./historico";
 
-const JANELA_RENOVADO_DIAS = 7;
+// Reexports para quem já importa daqui (página, testes). A lógica pura mora
+// em módulos sem Prisma para poder ser usada também no cliente.
+export { estadoContato } from "./contato";
+export type { EstadoContato } from "./contato";
+export { montarColunasKanban, contarNaoAvisados } from "./kanban";
+export type { ColunasKanban, OrdemKanban } from "./kanban";
 
 export type StatusAvisoView = {
   status: "QUEUED" | "SENT" | "DELIVERED" | "BOUNCED" | "FAILED";
@@ -15,6 +20,7 @@ export type CertificadoLinha = {
   clienteId: string;
   razaoSocial: string;
   clienteEmail: string;
+  clienteTelefone: string | null;
   titular: string;
   tipo: TipoCertificado;
   dataValidade: Date;
@@ -23,6 +29,7 @@ export type CertificadoLinha = {
   bucket: Bucket;
   ativo: boolean;
   renovadoEm: Date | null;
+  avisoD3Em: Date | null;
   avisoD60: StatusAvisoView | null;
   avisoD7: StatusAvisoView | null;
 };
@@ -36,6 +43,10 @@ function avisoView(
   return { status: aviso.status as StatusAvisoView["status"], enviadoEm: aviso.enviadoEm };
 }
 
+// "Renovado" é um estado temporário: dura 15 dias a partir de `renovadoEm`;
+// depois o certificado antigo volta a aparecer como "Em dia".
+const DIAS_RENOVADO = 15;
+
 export async function listarCertificados(hoje: Date = new Date()): Promise<CertificadoLinha[]> {
   const certificados = await prisma.certificado.findMany({
     include: { cliente: true, avisos: true },
@@ -44,13 +55,17 @@ export async function listarCertificados(hoje: Date = new Date()): Promise<Certi
 
   return certificados.map((certificado) => {
     const dias = diasRestantes(certificado.dataValidade, hoje);
-    const renovado = certificado.substituidoPorId !== null;
+    const renovado =
+      certificado.substituidoPorId !== null &&
+      certificado.renovadoEm !== null &&
+      diasRestantes(hoje, certificado.renovadoEm) <= DIAS_RENOVADO;
 
     return {
       id: certificado.id,
       clienteId: certificado.clienteId,
       razaoSocial: certificado.cliente.razaoSocial,
       clienteEmail: certificado.cliente.email,
+      clienteTelefone: certificado.cliente.telefone,
       titular: certificado.titular,
       tipo: certificado.tipo,
       dataValidade: certificado.dataValidade,
@@ -59,74 +74,11 @@ export async function listarCertificados(hoje: Date = new Date()): Promise<Certi
       bucket: calcularBucket(dias, { renovado }),
       ativo: certificado.ativo,
       renovadoEm: certificado.renovadoEm,
+      avisoD3Em: certificado.avisoD3Em,
       avisoD60: avisoView(certificado.avisos, "D60"),
       avisoD7: avisoView(certificado.avisos, "D7"),
     };
   });
-}
-
-export type ColunasKanban = {
-  aAvisar60: CertificadoLinha[];
-  avisado60: CertificadoLinha[];
-  aAvisar7: CertificadoLinha[];
-  avisado7: CertificadoLinha[];
-  confirmar3: CertificadoLinha[];
-  vencido: CertificadoLinha[];
-  renovado: CertificadoLinha[];
-};
-
-function avisado(status: StatusAvisoView | null): boolean {
-  return status !== null && (status.status === "SENT" || status.status === "DELIVERED");
-}
-
-// Puro: recebe as linhas ja lidas e so decide em qual coluna cada uma cai.
-// Posicao e sempre derivada dos dados — nunca ha estado de coluna gravado.
-export function montarColunasKanban(
-  linhas: CertificadoLinha[],
-  hoje: Date = new Date(),
-): ColunasKanban {
-  const colunas: ColunasKanban = {
-    aAvisar60: [],
-    avisado60: [],
-    aAvisar7: [],
-    avisado7: [],
-    confirmar3: [],
-    vencido: [],
-    renovado: [],
-  };
-
-  for (const linha of linhas) {
-    switch (linha.bucket) {
-      case "D60":
-        (avisado(linha.avisoD60) ? colunas.avisado60 : colunas.aAvisar60).push(linha);
-        break;
-      case "D7":
-        (avisado(linha.avisoD7) ? colunas.avisado7 : colunas.aAvisar7).push(linha);
-        break;
-      case "D3":
-        colunas.confirmar3.push(linha);
-        break;
-      case "VENCIDO":
-        colunas.vencido.push(linha);
-        break;
-      case "RENOVADO": {
-        if (!linha.renovadoEm) break;
-        // diasRestantes(hoje, renovadoEm): dias desde a renovacao ate hoje
-        // (positivo quando renovadoEm ja passou, que e sempre o caso aqui).
-        const diasDesdeRenovacao = diasRestantes(hoje, linha.renovadoEm);
-        if (diasDesdeRenovacao <= JANELA_RENOVADO_DIAS) colunas.renovado.push(linha);
-        break;
-      }
-      case "OK":
-        break;
-    }
-  }
-
-  return colunas;
-}
-
-export function contarNaoAvisados(colunas: ColunasKanban): { d60: number; d7: number } {
-  return { d60: colunas.aAvisar60.length, d7: colunas.aAvisar7.length };
 }
 
 function paraLinhaAuditoria(registro: {
@@ -152,7 +104,14 @@ function paraLinhaAuditoria(registro: {
 const LIMITE_HISTORICO_PERFIL = 20;
 
 export async function obterPerfilCliente(clienteId: string): Promise<{
-  cliente: { id: string; razaoSocial: string; cnpj: string; email: string; ativo: boolean };
+  cliente: {
+    id: string;
+    razaoSocial: string;
+    cnpj: string;
+    email: string;
+    telefone: string | null;
+    ativo: boolean;
+  };
   certificados: CertificadoLinha[];
   historico: LinhaAuditoria[];
 } | null> {
@@ -174,6 +133,7 @@ export async function obterPerfilCliente(clienteId: string): Promise<{
       razaoSocial: cliente.razaoSocial,
       cnpj: cliente.cnpj,
       email: cliente.email,
+      telefone: cliente.telefone,
       ativo: cliente.ativo,
     },
     certificados,
@@ -222,27 +182,43 @@ export async function listarHistorico(
   return { linhas: registros.map(paraLinhaAuditoria), total };
 }
 
-export async function listarNotificacoes(usuarioId: string): Promise<
-  {
-    id: string;
-    tipo: TipoNotificacao;
-    certificadoId: string;
-    clienteId: string;
-    lidaEm: Date | null;
-    criadoEm: Date;
-  }[]
-> {
-  return prisma.notificacaoInApp.findMany({
+export type NotificacaoLida = {
+  id: string;
+  tipo: TipoNotificacao;
+  certificadoId: string;
+  clienteId: string;
+  razaoSocial: string;
+  titular: string;
+  lidaEm: Date | null;
+  criadoEm: Date;
+};
+
+export async function listarNotificacoes(usuarioId: string): Promise<NotificacaoLida[]> {
+  const linhas = await prisma.notificacaoInApp.findMany({
     where: { usuarioId, lidaEm: null },
     orderBy: { criadoEm: "desc" },
+    include: {
+      cliente: { select: { razaoSocial: true } },
+      certificado: { select: { titular: true } },
+    },
   });
+  return linhas.map((n) => ({
+    id: n.id,
+    tipo: n.tipo,
+    certificadoId: n.certificadoId,
+    clienteId: n.clienteId,
+    razaoSocial: n.cliente.razaoSocial,
+    titular: n.certificado.titular,
+    lidaEm: n.lidaEm,
+    criadoEm: n.criadoEm,
+  }));
 }
 
 export async function listarClientesParaSelecao(): Promise<
-  { id: string; razaoSocial: string; email: string }[]
+  { id: string; razaoSocial: string; email: string; telefone: string | null }[]
 > {
   return prisma.cliente.findMany({
     orderBy: { razaoSocial: "asc" },
-    select: { id: true, razaoSocial: true, email: true },
+    select: { id: true, razaoSocial: true, email: true, telefone: true },
   });
 }

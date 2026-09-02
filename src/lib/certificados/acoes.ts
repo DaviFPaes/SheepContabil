@@ -2,11 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { obterSessao } from "@/lib/sessao-servidor";
 import { filtrarModulosVisiveis } from "@/lib/modulos-catalogo";
-import { executarModulo } from "@/lib/execucao";
-import { recalcularBucketsCertificados } from "./processar";
 import { calcularBucket, diasRestantes } from "./bucket";
 import { obterPerfilCliente as lerPerfilCliente } from "./consultas";
 
@@ -52,6 +51,10 @@ const esquemaCertificado = z.object({
     .string()
     .optional()
     .transform((v) => (v && v.trim().length > 0 ? v.trim() : null)),
+  telefone: z
+    .string()
+    .optional()
+    .transform((v) => (v && v.trim().length > 0 ? v.trim() : null)),
   ehRenovacao: z.string().optional(),
   certificadoAnteriorId: z.string().optional(),
 });
@@ -64,9 +67,22 @@ function lerFormCertificado(formData: FormData) {
     emitidoEm: formData.get("emitidoEm"),
     dataValidade: formData.get("dataValidade"),
     observacao: formData.get("observacao") ?? undefined,
+    telefone: formData.get("telefone") ?? undefined,
     ehRenovacao: formData.get("ehRenovacao") ?? undefined,
     certificadoAnteriorId: formData.get("certificadoAnteriorId") ?? undefined,
   });
+}
+
+// Atualiza o telefone do cliente quando o modal manda um valor diferente do
+// que está gravado. Roda dentro da transação de criar/editar certificado.
+async function talvezAtualizarTelefone(
+  tx: Prisma.TransactionClient,
+  cliente: { id: string; telefone: string | null },
+  telefone: string | null,
+) {
+  if (telefone !== null && telefone !== cliente.telefone) {
+    await tx.cliente.update({ where: { id: cliente.id }, data: { telefone } });
+  }
 }
 
 export async function criarCertificado(
@@ -96,6 +112,8 @@ export async function criarCertificado(
   const bucket = calcularBucket(diasRestantes(validade), { renovado: false });
 
   await prisma.$transaction(async (tx) => {
+    await talvezAtualizarTelefone(tx, cliente, dados.data.telefone);
+
     const novo = await tx.certificado.create({
       data: {
         clienteId: dados.data.clienteId,
@@ -192,7 +210,10 @@ export async function editarCertificado(
     return { erro: "A data de validade deve ser posterior à data de emissão." };
   }
 
-  const anterior = await prisma.certificado.findUnique({ where: { id } });
+  const anterior = await prisma.certificado.findUnique({
+    where: { id },
+    include: { cliente: { select: { id: true, telefone: true } } },
+  });
   if (!anterior) {
     return { erro: "Certificado não encontrado." };
   }
@@ -215,6 +236,7 @@ export async function editarCertificado(
   };
 
   await prisma.$transaction(async (tx) => {
+    await talvezAtualizarTelefone(tx, anterior.cliente, dados.data.telefone);
     await tx.certificado.update({
       where: { id },
       data: {
@@ -244,6 +266,244 @@ export async function editarCertificado(
 
   revalidatePath(ROTA);
   return { ok: true };
+}
+
+// Renovação rápida a partir da coluna "Vencido" do Kanban: o operador
+// informa uma nova validade e o card sai de Vencido para Renovado. Segue o
+// mesmo desenho da renovação do ModalCertificado — cria um Certificado novo
+// e encadeia o antigo por `substituidoPorId`.
+export async function renovarCertificadoVencido(
+  certificadoId: string,
+  novaValidadeISO: string,
+): Promise<EstadoForm> {
+  const sessao = await exigirAcessoSc20();
+
+  const id = z.string().min(1).safeParse(certificadoId);
+  if (!id.success) return { erro: "Certificado não informado." };
+
+  const iso = z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Informe uma data de validade válida.")
+    .safeParse(novaValidadeISO);
+  if (!iso.success) {
+    return { erro: iso.error.issues[0]?.message ?? "Data inválida." };
+  }
+
+  const certificado = await prisma.certificado.findUnique({
+    where: { id: id.data },
+    include: { cliente: true },
+  });
+  if (!certificado) return { erro: "Certificado não encontrado." };
+
+  const jaRenovado = certificado.substituidoPorId !== null;
+  const bucketAtual = calcularBucket(diasRestantes(certificado.dataValidade), {
+    renovado: jaRenovado,
+  });
+  if (bucketAtual !== "VENCIDO") {
+    return { erro: "Este certificado não está vencido." };
+  }
+
+  const hoje = normalizarData(new Date());
+  const novaValidade = normalizarData(new Date(`${iso.data}T00:00:00.000Z`));
+  if (novaValidade <= hoje) {
+    return {
+      erro: "A nova data precisa ser futura — o certificado continua vencido.",
+    };
+  }
+
+  const novoBucket = calcularBucket(diasRestantes(novaValidade), { renovado: false });
+
+  await prisma.$transaction(async (tx) => {
+    const novo = await tx.certificado.create({
+      data: {
+        clienteId: certificado.clienteId,
+        tipo: certificado.tipo,
+        titular: certificado.titular,
+        emitidoEm: hoje,
+        dataValidade: novaValidade,
+        observacao: certificado.observacao,
+        bucket: novoBucket,
+      },
+    });
+
+    await tx.certificado.update({
+      where: { id: certificado.id },
+      data: {
+        substituidoPorId: novo.id,
+        renovadoEm: new Date(),
+        ativo: false,
+        bucket: "RENOVADO",
+      },
+    });
+
+    await tx.registroAuditoria.create({
+      data: {
+        entidade: "Certificado",
+        entidadeId: novo.id,
+        acao: "CRIADO",
+        descricao: `Certificado ${certificado.tipo} de ${certificado.cliente.razaoSocial} criado na renovação de um certificado vencido`,
+        autorId: sessao.usuarioId,
+        autorEmail: sessao.email,
+        clienteId: certificado.clienteId,
+        dadosDepois: {
+          tipo: certificado.tipo,
+          titular: certificado.titular,
+          dataValidade: novaValidade.toISOString(),
+        },
+      },
+    });
+    await tx.registroAuditoria.create({
+      data: {
+        entidade: "Certificado",
+        entidadeId: certificado.id,
+        acao: "RENOVACAO",
+        descricao: `Certificado de ${certificado.cliente.razaoSocial} renovado a partir da coluna Vencido`,
+        autorId: sessao.usuarioId,
+        autorEmail: sessao.email,
+        clienteId: certificado.clienteId,
+        dadosAntes: { dataValidade: certificado.dataValidade.toISOString() },
+        dadosDepois: {
+          substituidoPorId: novo.id,
+          dataValidade: novaValidade.toISOString(),
+        },
+      },
+    });
+    await tx.registroAuditoria.create({
+      data: {
+        entidade: "Certificado",
+        entidadeId: certificado.id,
+        acao: "DESATIVADO",
+        descricao: `Certificado de ${certificado.cliente.razaoSocial} desativado pela renovação`,
+        autorId: sessao.usuarioId,
+        autorEmail: sessao.email,
+        clienteId: certificado.clienteId,
+      },
+    });
+  });
+
+  revalidatePath(ROTA);
+  return { ok: true };
+}
+
+// Coluna "Confirmar renovação — 3 dias": o operador dispara um aviso
+// individual (WhatsApp) e o card passa de pendente (âmbar) para avisado
+// (névoa). Sem integração real nesta etapa — só registra o contato.
+export async function avisarClienteD3(certificadoId: string): Promise<EstadoForm> {
+  const sessao = await exigirAcessoSc20();
+
+  const id = z.string().min(1).safeParse(certificadoId);
+  if (!id.success) return { erro: "Certificado não informado." };
+
+  const certificado = await prisma.certificado.findUnique({
+    where: { id: id.data },
+    include: { cliente: true },
+  });
+  if (!certificado) return { erro: "Certificado não encontrado." };
+
+  const jaRenovado = certificado.substituidoPorId !== null;
+  const bucket = calcularBucket(diasRestantes(certificado.dataValidade), {
+    renovado: jaRenovado,
+  });
+  if (bucket !== "D3") {
+    return { erro: "Este certificado não está na faixa de 3 dias." };
+  }
+
+  if (certificado.avisoD3Em) return { ok: true };
+
+  await prisma.$transaction(async (tx) => {
+    await tx.certificado.update({
+      where: { id: certificado.id },
+      data: { avisoD3Em: new Date() },
+    });
+    await tx.registroAuditoria.create({
+      data: {
+        entidade: "Certificado",
+        entidadeId: certificado.id,
+        acao: "AVISO_ENVIADO",
+        descricao: `Aviso de renovação enviado por WhatsApp para ${certificado.cliente.razaoSocial}`,
+        autorId: sessao.usuarioId,
+        autorEmail: sessao.email,
+        clienteId: certificado.clienteId,
+      },
+    });
+  });
+
+  revalidatePath(ROTA);
+  return { ok: true };
+}
+
+// Envio em lote das colunas 60d / 7d. Demonstrativo: não há disparo real de
+// e-mail, mas o AvisoCertificado é gravado (status SENT) para o card virar
+// névoa. `certificadoIds` vem da coluna correspondente; o bucket é
+// reconferido no servidor.
+export async function enviarAvisosLote(
+  marco: "D60" | "D7",
+  certificadoIds: string[],
+): Promise<{ enviados: number } | { erro: string }> {
+  const sessao = await exigirAcessoSc20();
+
+  const dados = z
+    .object({
+      marco: z.enum(["D60", "D7"]),
+      ids: z.array(z.string().min(1)).min(1),
+    })
+    .safeParse({ marco, ids: certificadoIds });
+  if (!dados.success) return { erro: "Nada para enviar." };
+
+  const alvo = dados.data.marco;
+  const certificados = await prisma.certificado.findMany({
+    where: { id: { in: dados.data.ids }, ativo: true },
+    include: { cliente: true, avisos: true },
+  });
+
+  let enviados = 0;
+  for (const certificado of certificados) {
+    const bucket = calcularBucket(diasRestantes(certificado.dataValidade), {
+      renovado: certificado.substituidoPorId !== null,
+    });
+    if (bucket !== alvo) continue;
+
+    const aviso = certificado.avisos.find((a) => a.marco === alvo);
+    if (aviso && (aviso.status === "SENT" || aviso.status === "DELIVERED")) continue;
+
+    await prisma.$transaction(async (tx) => {
+      await tx.avisoCertificado.upsert({
+        where: {
+          certificadoId_marco: { certificadoId: certificado.id, marco: alvo },
+        },
+        create: {
+          certificadoId: certificado.id,
+          clienteId: certificado.clienteId,
+          marco: alvo,
+          destinatarioEmail: certificado.cliente.email,
+          status: "SENT",
+          enviadoEm: new Date(),
+          providerMessageId: `demo-${certificado.id.slice(0, 8)}`,
+        },
+        update: {
+          status: "SENT",
+          enviadoEm: new Date(),
+          destinatarioEmail: certificado.cliente.email,
+          providerMessageId: `demo-${certificado.id.slice(0, 8)}`,
+        },
+      });
+      await tx.registroAuditoria.create({
+        data: {
+          entidade: "AvisoCertificado",
+          entidadeId: certificado.id,
+          acao: "AVISO_ENVIADO",
+          descricao: `Aviso ${alvo} enviado para ${certificado.cliente.email}`,
+          autorId: sessao.usuarioId,
+          autorEmail: sessao.email,
+          clienteId: certificado.clienteId,
+        },
+      });
+    });
+    enviados += 1;
+  }
+
+  revalidatePath(ROTA);
+  return { enviados };
 }
 
 export async function desativarCertificado(formData: FormData): Promise<void> {
@@ -313,20 +573,4 @@ export async function obterPerfilCliente(clienteId: string) {
   const id = z.string().min(1).safeParse(clienteId);
   if (!id.success) return null;
   return lerPerfilCliente(id.data);
-}
-
-export async function atualizarAgora(): Promise<void> {
-  const sessao = await exigirAcessoSc20();
-  await executarModulo("SC-20", sessao.email, () =>
-    recalcularBucketsCertificados(new Date(), {
-      autorId: sessao.usuarioId,
-      autorEmail: sessao.email,
-    }),
-  );
-  revalidatePath(ROTA);
-}
-
-// Ponte ate a Task 18 renomear o botao/import na pagina.
-export async function rodarAgora(): Promise<void> {
-  return atualizarAgora();
 }

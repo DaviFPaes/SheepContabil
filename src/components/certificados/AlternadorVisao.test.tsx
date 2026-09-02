@@ -6,9 +6,9 @@ afterEach(cleanup);
 beforeEach(() => localStorage.clear());
 
 describe("AlternadorVisao", () => {
-  it("sem ?visao e sem localStorage, comeca em 'tabela'", () => {
+  it("sem ?visao e sem localStorage, comeca em 'kanban'", () => {
     render(<AlternadorVisao visaoUrl={null} aoMudar={() => {}} />);
-    expect(screen.getByRole("button", { name: /tabela/i })).toHaveAttribute(
+    expect(screen.getByRole("button", { name: /kanban/i })).toHaveAttribute(
       "aria-pressed",
       "true",
     );
@@ -26,9 +26,9 @@ describe("AlternadorVisao", () => {
   it("persiste a escolha no localStorage e avisa via aoMudar", () => {
     const aoMudar = vi.fn();
     render(<AlternadorVisao visaoUrl={null} aoMudar={aoMudar} />);
-    fireEvent.click(screen.getByRole("button", { name: /kanban/i }));
-    expect(localStorage.getItem("sc20:visao")).toBe("kanban");
-    expect(aoMudar).toHaveBeenCalledWith("kanban");
+    fireEvent.click(screen.getByRole("button", { name: /tabela/i }));
+    expect(localStorage.getItem("sc20:visao")).toBe("tabela");
+    expect(aoMudar).toHaveBeenCalledWith("tabela");
   });
 
   it("?visao vence o localStorage e o reescreve", () => {

@@ -86,14 +86,31 @@ function nomeCliente(i: number): string {
 
 const TIPOS = ["ECNPJ", "ECPF", "NFE"] as const;
 
+const TOTAL_CLIENTES = 28;
+
+// Telefone celular BR ficticio e deterministico (formato "+55 DD 9XXXX-XXXX").
+// O modal de WhatsApp normaliza para digitos ao montar o link wa.me.
+function telefone(i: number): string {
+  const ddd = String(11 + (i % 27)).padStart(2, "0");
+  const a = String(1000 + ((i * 631) % 9000));
+  const b = String(1000 + ((i * 977) % 9000));
+  return `+55 ${ddd} 9${a}-${b}`;
+}
+
 type SpecCert = {
   diasAteVencer: number;
   tipoIdx: number;
   aviso?: { marco: "D60" | "D7"; bounce: boolean };
+  avisadoD3?: boolean;
 };
 
-// 35 OK, 20 D60 (10 avisados), 12 D7 (6 avisados), 5 D3, 8 VENCIDO.
-// Os 10 RENOVADO entram como par a parte (antigo + substituto).
+// 28 certificados sintéticos do SC-20. Somados aos 6 do seed base
+// (`prisma/seed.ts` — inclui um par de renovação), a carteira da página fica
+// em 34. Se o seed base mudar de tamanho, ajustar aqui. Cobrem as 4 colunas
+// do Kanban:
+//   1 OK (só na tabela) · 6 D60 (3 avisados, 1 bounce, 2 pendentes) ·
+//   5 D7 (2 avisados, 1 bounce, 2 pendentes) · 3 D3 (1 avisado, 2 pendentes) ·
+//   5 VENCIDO · 4 pares de renovação (novo = OK, antigo = RENOVADO na janela).
 function montarSpecs(): SpecCert[] {
   const specs: SpecCert[] = [];
   const add = (n: number, faixaDias: () => number, aviso?: (k: number) => SpecCert["aviso"]) => {
@@ -102,19 +119,25 @@ function montarSpecs(): SpecCert[] {
     }
   };
 
-  add(35, () => 70 + Math.floor(Math.random() * 330));
+  add(1, () => 70 + Math.floor(Math.random() * 330));
   add(
-    20,
+    6,
     () => 8 + Math.floor(Math.random() * 53),
-    (k) => (k < 10 ? { marco: "D60", bounce: k < 3 } : undefined),
+    (k) => (k < 4 ? { marco: "D60", bounce: k < 1 } : undefined),
   );
   add(
-    12,
+    5,
     () => 4 + Math.floor(Math.random() * 4),
-    (k) => (k < 6 ? { marco: "D7", bounce: k < 2 } : undefined),
+    (k) => (k < 3 ? { marco: "D7", bounce: k < 1 } : undefined),
   );
-  add(5, () => Math.floor(Math.random() * 4));
-  add(8, () => -1 - Math.floor(Math.random() * 40));
+  for (let k = 0; k < 3; k++) {
+    specs.push({
+      diasAteVencer: Math.floor(Math.random() * 4),
+      tipoIdx: specs.length % 3,
+      avisadoD3: k < 1,
+    });
+  }
+  add(5, () => -1 - Math.floor(Math.random() * 40));
   return specs;
 }
 
@@ -145,9 +168,9 @@ export async function seedSc20(prisma: PrismaClient): Promise<void> {
     where: { cnpj: { startsWith: PREFIXO_CNPJ_SC20 } },
   });
 
-  // --- 60 clientes ---
+  // --- clientes ---
   const clientes: { id: string; razaoSocial: string }[] = [];
-  for (let i = 0; i < 60; i++) {
+  for (let i = 0; i < TOTAL_CLIENTES; i++) {
     const razaoSocial = nomeCliente(i);
     const cnpj = gerarCnpjValido(String(10_000_001 + i));
     const c = await prisma.cliente.create({
@@ -156,7 +179,8 @@ export async function seedSc20(prisma: PrismaClient): Promise<void> {
         cnpj,
         atividade: RAMOS[(i * 7) % RAMOS.length],
         email: `${slug(razaoSocial)}${DOMINIO}`,
-        ativo: i % 12 !== 0, // ~5 inativos
+        telefone: telefone(i),
+        ativo: i % 12 !== 0, // ~3 inativos
       },
     });
     clientes.push({ id: c.id, razaoSocial });
@@ -227,13 +251,29 @@ export async function seedSc20(prisma: PrismaClient): Promise<void> {
         criadoEm: dias(-3 - Math.floor(Math.random() * 25)),
       });
     }
+    if (spec.avisadoD3) {
+      const avisadoEm = dias(-1);
+      await prisma.certificado.update({
+        where: { id: cert.id },
+        data: { avisoD3Em: avisadoEm },
+      });
+      auditoria.push({
+        entidade: "Certificado",
+        entidadeId: cert.id,
+        acao: "AVISO_ENVIADO",
+        descricao: `Aviso de renovação enviado por WhatsApp para ${cliente.razaoSocial}`,
+        autorEmail: "operador.processos@sheepcontabil.com.br",
+        clienteId: cliente.id,
+        criadoEm: avisadoEm,
+      });
+    }
   }
 
-  // --- 10 pares de renovação ---
-  for (let k = 0; k < 10; k++) {
-    const clienteIdx = 5 + k * 5;
+  // --- 4 pares de renovação (todos dentro da janela de 7 dias) ---
+  for (let k = 0; k < 4; k++) {
+    const clienteIdx = 5 + k * 4;
     const novo = await criarCert(clienteIdx, 300 + k * 5, k % 3);
-    const renovadoEm = dias(-1 - k * 2); // metade dentro dos 7 dias, metade fora
+    const renovadoEm = dias(-1 - k); // -1..-5, todos aparecem na coluna Renovado
     const antigo = await criarCert(clienteIdx, -5 + k, k % 3, {
       renovado: true,
       renovadoEm,
@@ -327,7 +367,7 @@ export async function seedSc20(prisma: PrismaClient): Promise<void> {
   const emFaixa = await prisma.certificado.findMany({
     where: { cliente: { cnpj: { startsWith: PREFIXO_CNPJ_SC20 } }, bucket: { in: ["D60", "D7", "D3"] } },
     select: { id: true, clienteId: true, bucket: true },
-    take: 12,
+    take: 8,
   });
   const tipoPorBucket: Record<string, "D60_ENTROU" | "D7_ENTROU" | "D3_ENTROU"> = {
     D60: "D60_ENTROU",

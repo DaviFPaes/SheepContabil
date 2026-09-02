@@ -38,6 +38,7 @@ model Cliente {
   cnpj        String   @unique
   atividade   String
   email       String
+  telefone    String?
   ativo       Boolean  @default(true)
   criadoEm    DateTime @default(now())
   certificados Certificado[]
@@ -109,6 +110,7 @@ model Certificado {
   substituidoPor   Certificado?       @relation("Renovacao", fields: [substituidoPorId], references: [id])
   substituiu       Certificado?       @relation("Renovacao")
   renovadoEm       DateTime?
+  avisoD3Em        DateTime?
   bucket           BucketCertificado  @default(OK)
   criadoEm         DateTime           @default(now())
   atualizadoEm     DateTime           @updatedAt

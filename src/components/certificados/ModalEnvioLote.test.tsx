@@ -1,13 +1,24 @@
 import { render, screen, fireEvent, cleanup } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+
+const enviarAvisosLote = vi.fn(
+  async (_marco: "D60" | "D7", ids: string[]) => ({ enviados: ids.length }),
+);
+vi.mock("@/lib/certificados/acoes", () => ({
+  enviarAvisosLote: (marco: "D60" | "D7", ids: string[]) => enviarAvisosLote(marco, ids),
+}));
+
 import { ModalEnvioLote } from "./ModalEnvioLote";
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  enviarAvisosLote.mockClear();
+});
 
 const destinatarios = [
-  { clienteId: "cl1", razaoSocial: "Alfa Ltda", email: "alfa@example.com" },
-  { clienteId: "cl2", razaoSocial: "Beta Ltda", email: "beta@example.com" },
-  { clienteId: "cl3", razaoSocial: "Gama Ltda", email: "gama@example.com" },
+  { certificadoId: "ct1", clienteId: "cl1", razaoSocial: "Alfa Ltda", email: "alfa@example.com" },
+  { certificadoId: "ct2", clienteId: "cl2", razaoSocial: "Beta Ltda", email: "beta@example.com" },
+  { certificadoId: "ct3", clienteId: "cl3", razaoSocial: "Gama Ltda", email: "gama@example.com" },
 ];
 
 describe("ModalEnvioLote", () => {
@@ -25,13 +36,25 @@ describe("ModalEnvioLote", () => {
     expect(screen.getByText(/2 de 3 selecionados/i)).toBeInTheDocument();
   });
 
-  it("confirmar avisa que nao esta disponivel e fecha, sem persistir", () => {
+  it("confirmar chama enviarAvisosLote e mostra o painel de sucesso", async () => {
     const aoFechar = vi.fn();
-    const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {});
     render(<ModalEnvioLote aberto marco="D60" aoFechar={aoFechar} destinatarios={destinatarios} />);
+
     fireEvent.click(screen.getByRole("button", { name: /confirmar envio/i }));
-    expect(alertSpy).toHaveBeenCalledWith(expect.stringMatching(/não disponível nesta etapa/i));
+
+    expect(await screen.findByText(/3 avisos enviados/i)).toBeInTheDocument();
+    expect(enviarAvisosLote).toHaveBeenCalledWith("D60", ["ct1", "ct2", "ct3"]);
+
+    fireEvent.click(screen.getByRole("button", { name: /concluir/i }));
     expect(aoFechar).toHaveBeenCalledTimes(1);
-    alertSpy.mockRestore();
+  });
+
+  it("confirma só os selecionados", async () => {
+    render(<ModalEnvioLote aberto marco="D60" aoFechar={() => {}} destinatarios={destinatarios} />);
+    fireEvent.click(screen.getAllByRole("checkbox")[1]); // desmarca Beta
+    fireEvent.click(screen.getByRole("button", { name: /confirmar envio/i }));
+
+    expect(await screen.findByText(/2 avisos enviados/i)).toBeInTheDocument();
+    expect(enviarAvisosLote).toHaveBeenCalledWith("D60", ["ct1", "ct3"]);
   });
 });

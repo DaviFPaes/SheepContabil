@@ -60,6 +60,7 @@ describe("ModalCertificado", () => {
       clienteId: "cl2",
       razaoSocial: "Beta Ltda",
       clienteEmail: "beta@example.com",
+      clienteTelefone: null,
       titular: "Beta Titular",
       tipo: "ECPF",
       dataValidade: new Date("2027-01-01T00:00:00Z"),
@@ -68,6 +69,7 @@ describe("ModalCertificado", () => {
       bucket: "OK",
       ativo: true,
       renovadoEm: null,
+      avisoD3Em: null,
       avisoD60: null,
       avisoD7: null,
     });

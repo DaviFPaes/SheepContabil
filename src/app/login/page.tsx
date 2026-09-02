@@ -1,11 +1,23 @@
 import { LogoSheep } from "@/components/LogoSheep";
 import { VeuAtmosferico } from "@/components/VeuAtmosferico";
+import FundoParticulas from "@/components/FundoParticulas";
 import { FormularioLogin } from "./FormularioLogin";
+
+// Referência estável — passar um literal inline remontaria o WebGL a cada render.
+const CORES_PARTICULAS = ["#1FA69A", "#10505F", "#EEF3F4"]; // turquesa, petróleo, névoa
 
 export default function PaginaLogin() {
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-tinta px-4 py-10">
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-10">
       <VeuAtmosferico />
+      <FundoParticulas
+        cores={CORES_PARTICULAS}
+        contagemParticulas={160}
+        velocidade={0.08}
+        tamanhoBase={90}
+        seguirMouse
+        fatorMouse={0.6}
+      />
 
       <section className="animate-entrada relative z-10 w-full max-w-sm">
         <div className="rounded-2xl border border-white/25 bg-nevoa/80 p-8 shadow-[0_24px_70px_-15px_rgba(11,26,32,0.65)] backdrop-blur-xl">
