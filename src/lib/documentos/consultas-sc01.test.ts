@@ -70,18 +70,16 @@ async function cenarioComConta() {
       numero: "56789-0",
     },
   });
-  // chegadaEm bem no futuro: garante que estes 2 docs vêm primeiro no orderBy desc
-  const chegadaEm = new Date("2099-08-15T09:00:00Z");
   for (let i = 0; i < 2; i++) {
     await prisma.documentoEntrada.create({
       data: {
         tipo: "EXTRATO",
         clienteId: cliente.id,
         contaBancariaId: conta.id,
-        nomeArquivo: `conta-${i}.pdf`,
+        nomeArquivo: `conta-teste-${i}.pdf`,
         mimeType: "application/pdf",
         arquivo: Buffer.from("z"),
-        chegadaEm,
+        chegadaEm: new Date("2026-08-15T09:00:00Z"),
         status: "PROCESSADO",
         competencia: "2026-08",
       },
@@ -127,7 +125,8 @@ describe("listarDocumentos", () => {
     const { clienteId } = await cenarioComConta();
     const ags = await listarDocumentos({ tipo: "EXTRATO", competencia: "2026-08" });
     expect(ags.every((d) => d.competencia === "2026-08")).toBe(true);
-    expect(ags[0].bancoRotulo).toMatch(/ag .* c\/c /);
+    const meu = ags.find((d) => d.nomeArquivo.startsWith("conta-teste-"));
+    expect(meu?.bancoRotulo).toMatch(/ag .* c\/c /);
   });
 });
 
