@@ -220,6 +220,9 @@ async function seedDocumentosEntrada() {
         mimeType: f.mime,
         arquivo: bytes,
         chegadaEm,
+        periodoInicio: new Date("2026-08-01T00:00:00Z"),
+        periodoFim: new Date("2026-08-31T00:00:00Z"),
+        competencia: "2026-08",
       },
     });
   }
