@@ -1,7 +1,9 @@
 -- SC-20 Etapa 1 — substituicao limpa do nucleo (ver docs/superpowers/specs/2026-09-01-sc-20-vencimento-certificado-etapa-1-design.md §3-4)
--- AvisoCertificado esta vazia em todo ambiente conhecido nesta migracao (o
--- processamento nunca gravou nada nela em producao) — dropamos as colunas
--- antigas e recriamos como "marco de e-mail" sem precisar de backfill ali.
+-- AvisoCertificado troca de modelo por completo (urgencia+dias+mensagem -> "marco
+-- de e-mail"): "faixa" (FaixaUrgencia) nao mapeia para "marco" (MarcoAviso) e as
+-- linhas antigas sao apenas ruido do cron diario, sem e-mail associado. Limpamos
+-- a tabela antes de adicionar as colunas NOT NULL — o cron do SC-20 regenera os
+-- marcos corretos na proxima execucao.
 -- Cliente e Certificado tem linhas de seed e recebem backfill explicito.
 
 -- CreateEnum
@@ -52,7 +54,11 @@ ALTER TABLE "Certificado" ALTER COLUMN "atualizadoEm" DROP DEFAULT;
 -- DropIndex (indice antigo referenciava colunas que vao sumir de AvisoCertificado)
 DROP INDEX "AvisoCertificado_certificadoId_criadoEm_idx";
 
--- AlterTable: AvisoCertificado recriado como marco de e-mail (tabela vazia)
+-- Limpa linhas legadas do modelo antigo (ruido do cron; sem e-mail associado).
+-- Necessario antes dos ADD COLUMN ... NOT NULL abaixo.
+DELETE FROM "AvisoCertificado";
+
+-- AlterTable: AvisoCertificado recriado como marco de e-mail (tabela agora vazia)
 ALTER TABLE "AvisoCertificado" DROP COLUMN "diasRestantes",
 DROP COLUMN "faixa",
 DROP COLUMN "mensagem",
