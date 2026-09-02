@@ -100,7 +100,7 @@ function subAreaVisivel(papel, moduloCodigo, subArea, permissoes?: PermissoesUsu
 `src/lib/permissoes/consultas.ts`:
 
 - `obterPermissoesUsuario(usuarioId): Promise<PermissoesUsuario>` — duas queries (`findMany` em cada tabela filtrado por `usuarioId`), monta os dois `Set`. Chamada só quando `sessao.papel === "OPERADOR"`.
-- `listarOperadoresParaGestao(): Promise<{ id, nome, email, setor, totalModulosElegiveis: number, totalModulosLigados: number }[]>` — usuários com `papel: "OPERADOR"`, mais a contagem "N de M" (M = módulos do catálogo com `implemented: true` **e** `setorDono` igual ao setor do operador — mesmo filtro que `filtrarModulosVisiveis` já aplica hoje; N = quantos desses têm `PermissaoModulo.habilitado = true`).
+- `listarOperadoresParaGestao(): Promise<{ id, nome, email, setor, totalModulosElegiveis: number, totalModulosLigados: number }[]>` — usuários com `papel: "OPERADOR"`, mais a contagem "N de M" (M = módulos do catálogo com `implementado: true` **e** `setorDono` igual ao setor do operador — mesmo filtro que `filtrarModulosVisiveis` já aplica hoje; N = quantos desses têm `PermissaoModulo.habilitado = true`).
 
 `src/lib/permissoes/acoes.ts` (`"use server"`):
 
@@ -148,7 +148,7 @@ Visual: segue o precedente de `/modulos/sc-11/termos` — `CabecalhoPortal` + `<
 Busca `listarOperadoresParaGestao()` e passa para um client component único, `src/components/usuarios/PainelGestaoUsuarios.tsx`, que:
 
 - Renderiza a lista de operadores à esquerda (nome, setor, "N de M módulos ligados").
-- Mantém `usuarioSelecionadoId` em estado; ao clicar, mostra à direita os módulos elegíveis (do catálogo, filtrados por `implemented: true` **e** `setorDono === setor` do operador — mesmo par de condições de `totalModulosElegiveis` acima), cada um com:
+- Mantém `usuarioSelecionadoId` em estado; ao clicar, mostra à direita os módulos elegíveis (do catálogo, filtrados por `implementado: true` **e** `setorDono === setor` do operador — mesmo par de condições de `totalModulosElegiveis` acima), cada um com:
   - toggle de módulo (chama `alternarPermissaoModulo`);
   - abaixo, os toggles de sub-área do catálogo §6 para aquele módulo (chamam `alternarPermissaoSubArea`), **desabilitados visualmente** (mas mostrando o valor salvo) enquanto o módulo estiver desligado.
 - Cada toggle salva sozinho ao ser clicado — sem botão "Salvar" nem estado de rascunho. Indicador pontual de "salvando…"/erro por linha (mesmo espírito dos outros paineis client do repo, ex. `PainelSc20`).
