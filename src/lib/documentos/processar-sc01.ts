@@ -23,13 +23,13 @@ export async function processarDocumento(
   if (!doc || doc.status !== "PENDENTE") return;
 
   try {
-    const linhas = await extrator({
+    const resultado = await extrator({
       mimeType: doc.mimeType,
       base64: Buffer.from(doc.arquivo).toString("base64"),
     });
 
     await prisma.$transaction(async (tx) => {
-      for (const linha of linhas) {
+      for (const linha of resultado.linhas) {
         await tx.lancamento.create({
           data: {
             documentoEntradaId: doc.id,

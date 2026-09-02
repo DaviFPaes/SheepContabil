@@ -13,13 +13,26 @@ export type LinhaExtraida = {
   trechoOriginal?: string;
 };
 
+export type ResultadoExtracao = {
+  linhas: LinhaExtraida[];
+  periodoInicio: string | null; // ISO yyyy-mm-dd
+  periodoFim: string | null;
+};
+
 export type ExtratorExtrato = (arquivo: {
   mimeType: string;
   base64: string;
-}) => Promise<LinhaExtraida[]>;
+}) => Promise<ResultadoExtracao>;
 
-export function criarExtratorFake(linhas: LinhaExtraida[]): ExtratorExtrato {
-  return async () => linhas;
+export function criarExtratorFake(
+  linhas: LinhaExtraida[],
+  periodo?: { inicio: string | null; fim: string | null },
+): ExtratorExtrato {
+  return async () => ({
+    linhas,
+    periodoInicio: periodo?.inicio ?? null,
+    periodoFim: periodo?.fim ?? null,
+  });
 }
 
 const FERRAMENTA = {
@@ -56,6 +69,15 @@ const FERRAMENTA = {
           required: ["data", "historico", "valor", "confianca"],
         },
       },
+      periodoInicio: {
+        type: "string",
+        description:
+          "Data inicial da cobertura DECLARADA no cabeçalho do extrato (ex.: 'Período: 01/08/2026 a 31/08/2026'), em ISO yyyy-mm-dd. Null se não houver.",
+      },
+      periodoFim: {
+        type: "string",
+        description: "Data final da cobertura declarada no cabeçalho, ISO yyyy-mm-dd. Null se não houver.",
+      },
     },
     required: ["linhas"],
   },
@@ -65,10 +87,12 @@ const INSTRUCAO = `Você recebe um extrato bancário brasileiro (PDF ou foto). E
 - data em ISO yyyy-mm-dd
 - historico: a descrição do lançamento
 - valor em reais: NEGATIVO para débito/saída, POSITIVO para crédito/entrada
-- confianca de 0 a 1: quão seguro você está da leitura DAQUELA linha (leiaute ambíguo, dígito borrado na foto, valor cortado → reduza a confiança)
+- confianca de 0 a 1: use 1 SOMENTE quando a leitura DAQUELA linha for inequívoca — dígitos nítidos, layout claro, nenhuma ambiguidade. Qualquer dúvida (foto tremida, dígito borrado, valor cortado, coluna ambígua, leiaute confuso) → confianca ABAIXO de 1.
 - trechoOriginal: o texto literal de onde leu
 
-Ignore saldos, cabeçalhos e totais — só as movimentações. Chame a ferramenta registrar_lancamentos uma vez, com todas as linhas.`;
+Informe também periodoInicio e periodoFim: o período de cobertura DECLARADO no cabeçalho do extrato (linhas como "Período: 01/08/2026 a 31/08/2026", "Movimentação de ... a ...", "EXTRATO SIMPLIFICADO - AGOSTO/2026"). Se o cabeçalho não declarar, deixe null.
+
+Ignore saldos, cabeçalhos e totais na lista de lançamentos — só as movimentações. Chame a ferramenta registrar_lancamentos uma vez, com todas as linhas e o período.`;
 
 export const extrairExtratoComClaude: ExtratorExtrato = async ({
   mimeType,
@@ -119,8 +143,16 @@ export const extrairExtratoComClaude: ExtratorExtrato = async ({
 
   const toolUse = mensagem.content.find((b) => b.type === "tool_use");
   if (toolUse && toolUse.type === "tool_use") {
-    const input = toolUse.input as { linhas?: LinhaExtraida[] };
-    return input.linhas ?? [];
+    const input = toolUse.input as {
+      linhas?: LinhaExtraida[];
+      periodoInicio?: string | null;
+      periodoFim?: string | null;
+    };
+    return {
+      linhas: input.linhas ?? [],
+      periodoInicio: input.periodoInicio ?? null,
+      periodoFim: input.periodoFim ?? null,
+    };
   }
 
   // Fallback: tenta achar um JSON com "linhas" no texto.
@@ -131,8 +163,16 @@ export const extrairExtratoComClaude: ExtratorExtrato = async ({
   const match = texto.match(/\{[\s\S]*"linhas"[\s\S]*\}/);
   if (match) {
     try {
-      const obj = JSON.parse(match[0]) as { linhas?: LinhaExtraida[] };
-      return obj.linhas ?? [];
+      const obj = JSON.parse(match[0]) as {
+        linhas?: LinhaExtraida[];
+        periodoInicio?: string | null;
+        periodoFim?: string | null;
+      };
+      return {
+        linhas: obj.linhas ?? [],
+        periodoInicio: obj.periodoInicio ?? null,
+        periodoFim: obj.periodoFim ?? null,
+      };
     } catch {
       /* cai no erro abaixo */
     }

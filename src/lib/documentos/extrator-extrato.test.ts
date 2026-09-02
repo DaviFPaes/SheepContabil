@@ -29,6 +29,38 @@ describe("criarExtratorFake", () => {
     const extrator = criarExtratorFake(linhas);
     await expect(
       extrator({ mimeType: "application/pdf", base64: "x" }),
-    ).resolves.toEqual(linhas);
+    ).resolves.toEqual({
+      linhas,
+      periodoInicio: null,
+      periodoFim: null,
+    });
+  });
+
+  it("devolve linhas e período nulo por padrão", async () => {
+    const LINHA: LinhaExtraida = {
+      data: "2026-08-03",
+      historico: "TED RECEBIDA",
+      valor: 100,
+      confianca: 1,
+    };
+    const ex = criarExtratorFake([LINHA]);
+    expect(await ex({ mimeType: "application/pdf", base64: "x" })).toEqual({
+      linhas: [LINHA],
+      periodoInicio: null,
+      periodoFim: null,
+    });
+  });
+
+  it("devolve o período quando informado", async () => {
+    const LINHA: LinhaExtraida = {
+      data: "2026-08-03",
+      historico: "TED RECEBIDA",
+      valor: 100,
+      confianca: 1,
+    };
+    const ex = criarExtratorFake([LINHA], { inicio: "2026-08-01", fim: "2026-08-31" });
+    const r = await ex({ mimeType: "application/pdf", base64: "x" });
+    expect(r.periodoInicio).toBe("2026-08-01");
+    expect(r.periodoFim).toBe("2026-08-31");
   });
 });

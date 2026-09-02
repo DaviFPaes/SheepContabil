@@ -122,7 +122,11 @@ describe("processarExtratos", () => {
     const extrator: ExtratorExtrato = async ({ base64 }) => {
       const conteudo = Buffer.from(base64, "base64").toString("utf8");
       if (conteudo.includes("ruim")) throw new Error("Arquivo ilegível.");
-      return LINHAS_OK;
+      return {
+        linhas: LINHAS_OK,
+        periodoInicio: null,
+        periodoFim: null,
+      };
     };
     const resultado = await processarExtratos({ extrator });
 
