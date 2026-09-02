@@ -5,6 +5,8 @@ import { sair } from "@/lib/sessao-acoes";
 import { CabecalhoPortal } from "@/components/CabecalhoPortal";
 import { VeuAtmosferico } from "@/components/VeuAtmosferico";
 import { filtrarModulosVisiveis, obterModulo } from "@/lib/modulos-catalogo";
+import { obterPermissoesUsuario } from "@/lib/permissoes/consultas";
+import { subAreaVisivel } from "@/lib/permissoes/regra";
 import {
   listarCertificados,
   listarClientesParaSelecao,
@@ -85,16 +87,24 @@ export default async function PaginaSc20({
     redirect("/login");
   }
 
+  const permissoes =
+    sessao.papel === "OPERADOR" ? await obterPermissoesUsuario(sessao.usuarioId) : undefined;
+
   const modulo = obterModulo("SC-20");
   const podeVer =
     modulo !== undefined &&
-    filtrarModulosVisiveis(sessao.papel, sessao.setor).some((m) => m.codigo === "SC-20");
+    filtrarModulosVisiveis(sessao.papel, sessao.setor, undefined, permissoes).some(
+      (m) => m.codigo === "SC-20",
+    );
   if (!modulo || !podeVer) {
     redirect("/");
   }
 
+  const mostrarAbaHistorico = subAreaVisivel(sessao.papel, "SC-20", "aba_historico", permissoes);
+  const mostrarSino = subAreaVisivel(sessao.papel, "SC-20", "sino_avisos", permissoes);
+
   const sp = await searchParams;
-  const aba = sp.aba === "historico" ? "historico" : "certificados";
+  const aba = mostrarAbaHistorico && sp.aba === "historico" ? "historico" : "certificados";
   const visaoUrl: Visao | null = sp.visao === "kanban" || sp.visao === "tabela" ? sp.visao : null;
   const focoInicial: Foco =
     sp.foco === "D60" || sp.foco === "D7" || sp.foco === "D3" ? sp.foco : null;
@@ -181,7 +191,7 @@ export default async function PaginaSc20({
               </h1>
             </div>
 
-            <SinoAvisos notificacoes={notificacoes} tom="escuro" />
+            {mostrarSino ? <SinoAvisos notificacoes={notificacoes} tom="escuro" /> : null}
           </div>
 
           <dl className="mt-8 grid max-w-2xl grid-cols-2 divide-x divide-white/10 border-y border-white/10 sm:grid-cols-4">
@@ -208,9 +218,11 @@ export default async function PaginaSc20({
               <Link href="/modulos/sc-20?aba=certificados" className={abaClasse(aba === "certificados")}>
                 Certificados
               </Link>
-              <Link href="/modulos/sc-20?aba=historico" className={abaClasse(aba === "historico")}>
-                Histórico
-              </Link>
+              {mostrarAbaHistorico ? (
+                <Link href="/modulos/sc-20?aba=historico" className={abaClasse(aba === "historico")}>
+                  Histórico
+                </Link>
+              ) : null}
             </nav>
 
             {aba === "certificados" ? (
