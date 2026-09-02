@@ -265,6 +265,24 @@ describe("listarHistorico", () => {
     const resultado = await listarHistorico({ clienteId: cliente.id, acao: "EDITADO" });
     expect(resultado.linhas.every((l) => l.acao === "EDITADO")).toBe(true);
   });
+
+  it("listarHistorico não vê eventos de outras entidades (DocumentoEntrada)", async () => {
+    const cliente = await prisma.cliente.create({
+      data: { razaoSocial: "Escopo SC-20", cnpj: "88.888.888/0001-88", atividade: "T", email: "escopo-sc20@example.com" },
+    });
+    await prisma.registroAuditoria.create({
+      data: { entidade: "DocumentoEntrada", entidadeId: "d1", acao: "EXTRATO_ENVIADO", descricao: "não é da SC-20", clienteId: cliente.id },
+    });
+    await prisma.registroAuditoria.create({
+      data: { entidade: "Certificado", entidadeId: "c1", acao: "CRIADO", descricao: "é da SC-20", clienteId: cliente.id },
+    });
+    const { linhas } = await listarHistorico({ clienteId: cliente.id, pagina: 1, porPagina: 50 });
+    expect(linhas.some((l) => l.descricao === "não é da SC-20")).toBe(false);
+    expect(linhas.some((l) => l.descricao === "é da SC-20")).toBe(true);
+
+    await prisma.registroAuditoria.deleteMany({ where: { clienteId: cliente.id } });
+    await prisma.cliente.delete({ where: { id: cliente.id } });
+  });
 });
 
 describe("listarNotificacoes", () => {

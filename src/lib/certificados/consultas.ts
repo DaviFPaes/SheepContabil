@@ -121,7 +121,7 @@ export async function obterPerfilCliente(clienteId: string): Promise<{
   const [certificados, historico] = await Promise.all([
     listarCertificados().then((lista) => lista.filter((c) => c.clienteId === clienteId)),
     prisma.registroAuditoria.findMany({
-      where: { clienteId },
+      where: { clienteId, entidade: { in: ["Certificado", "AvisoCertificado"] } },
       orderBy: { criadoEm: "desc" },
       take: LIMITE_HISTORICO_PERFIL,
     }),
@@ -157,6 +157,7 @@ export async function listarHistorico(
   const porPagina = filtros.porPagina ?? 30;
 
   const where: Prisma.RegistroAuditoriaWhereInput = {
+    entidade: { in: ["Certificado", "AvisoCertificado"] },
     ...(filtros.clienteId ? { clienteId: filtros.clienteId } : {}),
     ...(filtros.acao ? { acao: filtros.acao } : {}),
     ...(filtros.de || filtros.ate
